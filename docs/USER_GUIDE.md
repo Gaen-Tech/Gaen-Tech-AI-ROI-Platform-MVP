@@ -10,7 +10,20 @@ This platform is your AI-powered assistant for business development. It helps yo
 - **Qualify** them as leads based on data-driven insights.
 - **Generate** a professional proposal in a single click.
 
-## 2. Navigating the Platform
+## 2. Understanding "Demo Mode"
+
+This application has two modes: Live Mode and Demo Mode.
+
+- **Live Mode**: When a valid Google Gemini API key is configured, the platform performs real-time analysis using the AI. All data is live and specific to the company you analyze.
+- **Demo Mode**: If no API key is set up, the app runs in a fully-featured Demo Mode. You will see a **"Demo Mode"** badge in the header. In this mode, the app uses a built-in generator to create realistic, but sample, analysis data.
+
+**Key things to know about Demo Mode:**
+- A warning banner will appear on the lead detail page.
+- Any PDF proposals you export will be clearly watermarked as "SAMPLE PROPOSAL".
+
+This ensures you always know the source of the data and can use the platform for training or demonstrations with full transparency.
+
+## 3. Navigating the Platform
 
 The main navigation is on the left-hand **Sidebar**. There are three key sections:
 
@@ -20,13 +33,13 @@ The main navigation is on the left-hand **Sidebar**. There are three key section
 
 ---
 
-## 3. The Workflow: From Discovery to Proposal
+## 4. The Workflow: From Discovery to Proposal
 
 This is the core workflow you will follow to generate and manage leads.
 
 ### Step 1: Discover and Analyze a Company
 
-Navigate to the **Discovery** page. You have two ways to analyze a company:
+Navigate to the **Discovery** page.
 
 **A) Analyze a New Company by URL:**
 1. Find a company you're interested in.
@@ -35,8 +48,9 @@ Navigate to the **Discovery** page. You have two ways to analyze a company:
 4. The AI will now analyze the website in real-time. This may take 15-30 seconds. You will see a loading indicator.
 
 **B) Analyze from the Existing List:**
-1. Use the search bar or the industry filter to find a company in the main list.
-2. Once you find a target, click the **"Analyze Company"** button in its row.
+1. The list is pre-populated with geo-targeted companies. Use the search bar or the industry filter to find one.
+2. Don't see a good fit? Click the **"Refresh List"** button to get a new set of companies.
+3. Once you find a target, click the **"Analyze Company"** button in its row.
 
 Once the analysis is complete, you will be automatically redirected to the **Leads** page, where your newly analyzed company will appear at the top of the list.
 
@@ -44,15 +58,21 @@ Once the analysis is complete, you will be automatically redirected to the **Lea
 
 Navigate to the **Leads** page. This is your pipeline.
 
-**A) Viewing Lead Details:**
+**A) Filtering Your Leads:**
+- At the top right, you will find two filters that work together:
+    - **Status**: Filter by the lead's current stage (e.g., show only "Qualified" leads).
+    - **Minimum ROI**: Filter by the lead's financial potential (e.g., show leads worth over "$100k+").
+- Use these to focus on your highest-priority leads.
+
+**B) Viewing Lead Details:**
 1. For any lead in the list, click the **"View"** button.
 2. A modal window will pop up, showing you a detailed breakdown of the AI analysis:
     - **AI Opportunity Score**: A quick measure of the lead's potential. Higher is better.
     - **Est. Total Annual ROI**: The total potential financial gain for the client.
-    - **Key Opportunities**: Specific problems the company likely faces and how Gaen Tech's AI solutions can solve them, including individual impact estimates.
+    - **Key Opportunities**: Specific problems the company likely faces and how Gaen Tech's AI solutions can solve them.
     - **Analysis Sources**: A list of clickable links to the web pages the AI used for its analysis. **Use these to verify the data and build your own understanding before a client call.**
 
-**B) Updating Lead Status:**
+**C) Updating Lead Status:**
 - In the "Status" column for each lead, you can use the dropdown menu to update their stage in the sales funnel:
     - **Prospected**: The default status for a new lead.
     - **Contacted**: You have reached out to the lead.
@@ -63,13 +83,13 @@ Navigate to the **Leads** page. This is your pipeline.
 
 The final step is to generate a client-ready document.
 
-1.  From the **Lead Detail Modal** (see Step 2A), click the **"Export as PDF"** button.
+1.  From the **Lead Detail Modal** (see Step 2B), click the **"Export as PDF"** button.
 2.  A professionally formatted PDF proposal will be generated and downloaded to your computer.
 3.  This document contains all the key information from the analysis and is ready to be sent to the prospective client to start the conversation.
 
 ---
 
-## 4. Understanding the Dashboard
+## 5. Understanding the Dashboard
 
 The **Dashboard** gives you a real-time overview of your efforts.
 

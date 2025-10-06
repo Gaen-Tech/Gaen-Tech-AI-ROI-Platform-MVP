@@ -118,9 +118,38 @@ export const analyzeCompanyWebsite = async (company: Company): Promise<AnalysisR
     jsonText = jsonText.substring(jsonStartIndex, jsonEndIndex + 1);
     
     const analysis = JSON.parse(jsonText);
+    
+    // --- Data Validation and Fallbacks ---
+    const validatedAnalysis: Partial<AnalysisResult> = {};
+
+    // Validate aiOpportunityScore
+    validatedAnalysis.aiOpportunityScore = typeof analysis.aiOpportunityScore === 'number'
+      ? analysis.aiOpportunityScore
+      : 75; // Default score if missing
+
+    // Validate keyOpportunities
+    if (Array.isArray(analysis.keyOpportunities) && analysis.keyOpportunities.length > 0) {
+      validatedAnalysis.keyOpportunities = analysis.keyOpportunities.filter(op => 
+        op && typeof op.opportunity === 'string' && typeof op.estimatedImpact === 'number'
+      );
+    } else {
+      throw new Error("Analysis failed: The AI response was missing key opportunity data.");
+    }
+    
+    // Validate or calculate estimatedRoi
+    if (typeof analysis.estimatedRoi === 'number') {
+      validatedAnalysis.estimatedRoi = analysis.estimatedRoi;
+    } else {
+      console.warn("API response missing 'estimatedRoi'. Calculating from opportunities.");
+      validatedAnalysis.estimatedRoi = validatedAnalysis.keyOpportunities.reduce(
+        (sum, op) => sum + (op.estimatedImpact || 0), 0
+      );
+    }
+    // --- End Validation ---
+
     const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     
-    return { ...analysis, sources, isMockData: false }; // Flag live data
+    return { ...validatedAnalysis as AnalysisResult, sources, isMockData: false }; // Flag live data
 
   } catch (error) {
     console.error("Error analyzing company website with Gemini API:", error);

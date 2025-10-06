@@ -11,22 +11,34 @@ The core mission is to empower sales and business development teams to quickly t
 ## Key Features
 
 - **Dashboard Overview**: Get a high-level view of your sales pipeline, including the number of opportunities, qualified leads, and total potential ROI visualized by status and industry.
-- **Company Discovery**:
-    - Analyze companies from a pre-populated list of potential targets.
+
+- **Geo-Targeted Company Discovery**:
+    - Analyze companies from a pre-populated, geo-targeted list focusing on the NJ, DE, PA, and NYC areas.
+    - Dynamically refresh the discovery list with a single click.
     - Analyze any company on-the-fly by simply entering their website URL.
     - Filter and search through the discovery list to find ideal prospects.
     - Export the discovery list as a CSV file.
+
 - **AI-Powered Analysis**:
     - Leverages the Google Gemini API with **Google Search grounding** to ensure analysis is based on real-time, verifiable data.
     - Generates an "AI Opportunity Score" to quickly assess a prospect's potential.
     - Identifies 2-3 key, high-impact opportunities with clear problem statements and AI-driven solutions.
     - Provides estimated financial impact and an ROI timeline for each opportunity.
+
 - **Lead Management**:
     - Automatically converts every analyzed company into a lead.
     - View detailed breakdowns of the AI analysis for each lead.
     - Update lead status through a simple sales funnel (`Prospected`, `Contacted`, `Qualified`, `Closed`).
-    - Filter leads by minimum estimated ROI.
+    - **Filter leads by both status and minimum estimated ROI** for a granular view of your pipeline.
+
 - **One-Click PDF Proposals**: Instantly generate a professional, client-ready digital transformation proposal based on the AI analysis. The proposal is professionally formatted and includes all key data points and verifiable sources.
+
+- **Trust & Transparency with "Demo Mode"**:
+    - If no API key is provided, the app runs in a fully-featured "Demo Mode".
+    - A clear "Demo Mode" badge is always visible in the header.
+    - All generated analysis is clearly marked as sample data, and exported PDFs are watermarked, ensuring full transparency.
+
+- **Accessibility**: Key interactive elements include ARIA labels to ensure a better user experience for all users.
 
 ---
 
@@ -77,13 +89,9 @@ The core mission is to empower sales and business development teams to quickly t
 
 ### Configuration
 
-The application requires a Google Gemini API key to function. This key should be stored in an environment variable named `API_KEY`.
+The application requires a Google Gemini API key to function with live data. This key should be stored in an environment variable named `API_KEY`.
 
 1.  **Obtain an API Key**: If you don't have one, get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 2.  **Set Environment Variable**: The execution environment where this app is hosted must have the `API_KEY` environment variable set. The application is coded to read `process.env.API_KEY` directly.
 
-**Note**: For local development or environments where setting environment variables is not straightforward, the application has a fallback. However, for security and best practices, always use environment variables in production.
-
-### Running the Application
-
-This web application is designed to be served by a static file server. Ensure that the server is configured to serve `index.html` as the entry point. All necessary scripts are loaded via ES modules and an import map within `index.html`.
+**Demo Mode**: If the `API_KEY` environment variable is not set, the application will automatically launch in **Demo Mode**. In this mode, it uses a dynamic mock data generator instead of the live Gemini API, allowing for full functionality for demonstration or development purposes.

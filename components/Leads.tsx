@@ -98,6 +98,7 @@ interface LeadsProps {
 
 export const Leads: React.FC<LeadsProps> = ({ leads, onUpdateStatus }) => {
     const [roiFilter, setRoiFilter] = useState(0);
+    const [statusFilter, setStatusFilter] = useState<'All' | Lead['status']>('All');
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [leadForExport, setLeadForExport] = useState<Lead | null>(null);
     const [isExporting, setIsExporting] = useState(false);
@@ -163,31 +164,52 @@ export const Leads: React.FC<LeadsProps> = ({ leads, onUpdateStatus }) => {
     }, [leadForExport]);
     
     const roiOptions = [0, 50000, 100000, 250000, 500000];
+    const leadStatusOptions: ('All' | Lead['status'])[] = ['All', 'Prospected', 'Contacted', 'Qualified', 'Closed'];
 
     const filteredLeads = useMemo(() => {
         return leads
-            .filter(lead => lead.estimatedRoi >= roiFilter)
+            .filter(lead => {
+                const passesRoi = lead.estimatedRoi >= roiFilter;
+                const passesStatus = statusFilter === 'All' || lead.status === statusFilter;
+                return passesRoi && passesStatus;
+            })
             .sort((a, b) => b.aiOpportunityScore - a.aiOpportunityScore);
-    }, [leads, roiFilter]);
+    }, [leads, roiFilter, statusFilter]);
 
     return (
         <>
             <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg">
-                <div className="flex justify-end items-center mb-6">
-                     <label htmlFor="roi-filter" className="text-sm font-medium text-gray-300 mr-2">Minimum ROI:</label>
-                    <select
-                        id="roi-filter"
-                        aria-label="Filter leads by minimum estimated ROI"
-                        className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                        value={roiFilter}
-                        onChange={(e) => setRoiFilter(Number(e.target.value))}
-                    >
-                        {roiOptions.map(val => (
-                           <option key={val} value={val}>
-                               {val > 0 ? `$${(val/1000).toFixed(0)}k+` : 'All'}
-                           </option>
-                        ))}
-                    </select>
+                <div className="flex justify-end items-center mb-6 gap-4">
+                    <div>
+                        <label htmlFor="status-filter" className="text-sm font-medium text-gray-300 mr-2">Status:</label>
+                        <select
+                            id="status-filter"
+                            aria-label="Filter leads by status"
+                            className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as 'All' | Lead['status'])}
+                        >
+                            {leadStatusOptions.map(status => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="roi-filter" className="text-sm font-medium text-gray-300 mr-2">Minimum ROI:</label>
+                        <select
+                            id="roi-filter"
+                            aria-label="Filter leads by minimum estimated ROI"
+                            className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                            value={roiFilter}
+                            onChange={(e) => setRoiFilter(Number(e.target.value))}
+                        >
+                            {roiOptions.map(val => (
+                               <option key={val} value={val}>
+                                   {val > 0 ? `$${(val/1000).toFixed(0)}k+` : 'All'}
+                               </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -242,7 +264,7 @@ export const Leads: React.FC<LeadsProps> = ({ leads, onUpdateStatus }) => {
                     )}
                      {leads.length > 0 && filteredLeads.length === 0 && (
                         <div className="text-center py-8 text-gray-400">
-                            <p>No leads match the current ROI filter.</p>
+                            <p>No leads match the current filters.</p>
                         </div>
                     )}
                 </div>

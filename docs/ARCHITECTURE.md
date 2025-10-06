@@ -4,7 +4,7 @@ This document provides a high-level overview of the technical architecture for t
 
 ## 1. Core Philosophy
 
-The architecture is designed around the principles of a Minimum Viable Product (MVP): simplicity, speed, and focus on core value. We use a modern, component-based frontend architecture that is easy to understand, maintain, and extend.
+The architecture is designed around the principles of a Minimum Viable Product (MVP): simplicity, speed, and focus on core value. We use a modern, component-based frontend architecture that is easy to understand, maintain, and extend. The design prioritizes reliability and user trust.
 
 ## 2. Technology Stack
 
@@ -21,7 +21,7 @@ The codebase is organized into logical directories to maintain separation of con
 
 - `components/`: Contains all reusable React components. This is the primary building block of the UI.
 - `services/`: Handles external API communication, abstracting the data-fetching logic from the components. `geminiService.ts` is the key file here.
-- `hooks/`: Stores custom React hooks. Currently used for providing mock data (`useMockCompanies.ts`).
+- `hooks/`: Stores custom React hooks. Currently used for providing a dynamic, geo-targeted list of mock companies (`useMockCompanies.ts`).
 - `types.ts`: A central location for all TypeScript type definitions, ensuring data consistency across the application.
 
 ## 4. State Management
@@ -32,7 +32,24 @@ For the MVP, we have adopted a localized state management approach using **React
 - **State Location**: The primary application state (the list of `leads` and `companies`) is lifted up to the main `App.tsx` component.
 - **Data Flow**: State and state-updating functions are passed down to child components as props. This follows a unidirectional data flow, making the application easier to reason about and debug.
 
-## 5. Data Flow Diagram (Conceptual)
+## 5. Architectural Patterns
+
+### Robust Service Layer (`geminiService.ts`)
+
+The service layer is designed to be highly resilient. Instead of just making an API call, it's responsible for:
+- **Prompt Engineering**: Crafting precise instructions for the AI model.
+- **Resilient Parsing**: Intelligently extracting a valid JSON object from the AI's response, even if it contains extraneous text.
+- **Response Validation**: Proactively checking if the AI's response is empty or blocked by safety filters, providing clear errors to the user.
+- **Data Integrity**: Validating the structure of the AI's response and providing fallbacks for critical missing data (e.g., calculating `estimatedRoi` if it's not provided).
+
+### "Demo Mode" for Transparency and Development
+
+A key architectural decision is the implementation of a transparent "Demo Mode".
+- **Trigger**: The application automatically enters Demo Mode if the `API_KEY` environment variable is not present.
+- **Mechanism**: The `geminiService` intercepts the call and routes it to an internal `generateMockAnalysis` function, which creates dynamic, varied, and realistic sample data.
+- **User-Facing Indicators**: The system ensures the user is always aware they are in Demo Mode through a global header badge, warning messages in the UI, and watermarks on PDF exports. This builds trust and provides a seamless development/demonstration experience without needing a live API key.
+
+## 6. Data Flow Diagram (Conceptual)
 
 This diagram illustrates the primary workflow of analyzing a company and generating a lead.
 
@@ -46,13 +63,14 @@ This diagram illustrates the primary workflow of analyzing a company and generat
 [handleAnalyze(company)] --> Calls geminiService.analyzeCompanyWebsite(company)
        |
        v
-[geminiService.ts] -----> Makes API call to Google Gemini
+[geminiService.ts] -----> Checks for API_KEY. If absent, returns mock data.
+       |                 If present, makes API call to Google Gemini.
        |                          |
        |                          v
        |                      [Google Cloud]
        |                          |
        |                          v
-       |<---- [AnalysisResult] --- Returns JSON response
+       |<---- [AnalysisResult] --- Returns JSON response (which is then cleaned, validated, and parsed)
        |
        v
 [onAnalyzeComplete(company, analysisResult)] is called in Discovery.tsx
@@ -66,15 +84,6 @@ This diagram illustrates the primary workflow of analyzing a company and generat
        v
 [React Re-renders] --> UI is updated to show the new lead in Leads.tsx
 ```
-
-## 6. Key Components and Responsibilities
-
-- **`App.tsx`**: The root component. It manages the main application state (`leads`, `companies`), handles view routing, and passes data down to its children.
-- **`Sidebar.tsx` & `Header.tsx`**: Responsible for primary navigation and layout. They are stateless UI components.
-- **`Dashboard.tsx`**: A data visualization component. It receives the `leads` array as a prop and uses Recharts to display statistics and charts.
-- **`Discovery.tsx`**: The "input" section of the application. It allows users to select or enter a company and trigger the AI analysis. It manages its own local state for filters, search terms, and loading states.
-- **`Leads.tsx`**: The "output" section. It displays the list of generated leads, allows for status updates, and contains the logic for triggering the `LeadDetailModal` and the PDF export process.
-- **`ProposalForExport.tsx`**: A presentational component designed specifically for PDF generation. It is rendered off-screen with the lead's data and captured by `html2canvas`.
 
 ## 7. Future Considerations
 
