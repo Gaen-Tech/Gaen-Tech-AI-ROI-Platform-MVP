@@ -42,6 +42,7 @@ export interface AnalysisResult {
   keyOpportunities: OpportunityDetail[];
   estimatedRoi: number;
   sources?: GroundingSource[];
+  isMockData?: boolean; // Flag to indicate if the data is from the mock generator
 }
 
 export type LeadStatus = 'Prospected' | 'Contacted' | 'Qualified' | 'Closed';

@@ -23,6 +23,11 @@ const LeadDetailModal: React.FC<{
             >
                  <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white z-10">&times;</button>
                  <div className="p-4">
+                     {lead.isMockData && (
+                        <div className="bg-yellow-500/10 text-yellow-300 p-3 rounded-lg mb-4 text-sm text-center border border-yellow-500/30">
+                            <strong>Demo Data:</strong> This analysis was generated for demonstration purposes and does not reflect a real-time AI analysis of the company.
+                        </div>
+                     )}
                      <h2 className="text-2xl font-bold text-white mb-2">{lead.name}</h2>
                      <p className="text-sm text-brand-primary mb-4"><a href={`http://${lead.website}`} target="_blank" rel="noopener noreferrer">{lead.website}</a></p>
 
@@ -172,6 +177,7 @@ export const Leads: React.FC<LeadsProps> = ({ leads, onUpdateStatus }) => {
                      <label htmlFor="roi-filter" className="text-sm font-medium text-gray-300 mr-2">Minimum ROI:</label>
                     <select
                         id="roi-filter"
+                        aria-label="Filter leads by minimum estimated ROI"
                         className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
                         value={roiFilter}
                         onChange={(e) => setRoiFilter(Number(e.target.value))}
@@ -206,6 +212,7 @@ export const Leads: React.FC<LeadsProps> = ({ leads, onUpdateStatus }) => {
                                             value={lead.status}
                                             onChange={(e) => onUpdateStatus(lead.id, e.target.value as Lead['status'])}
                                             className="bg-gray-700 border border-gray-600 rounded py-1 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                                            aria-label={`Update status for ${lead.name}`}
                                         >
                                             <option>Prospected</option>
                                             <option>Contacted</option>
@@ -214,7 +221,12 @@ export const Leads: React.FC<LeadsProps> = ({ leads, onUpdateStatus }) => {
                                         </select>
                                     </td>
                                     <td className="p-3 text-center">
-                                        <button onClick={() => setSelectedLead(lead)} title="View Details" className="bg-brand-primary/20 hover:bg-brand-primary/40 text-brand-primary font-semibold py-1 px-4 rounded-lg flex items-center justify-center mx-auto">
+                                        <button 
+                                            onClick={() => setSelectedLead(lead)} 
+                                            title="View Details" 
+                                            aria-label={`View details for ${lead.name}`}
+                                            className="bg-brand-primary/20 hover:bg-brand-primary/40 text-brand-primary font-semibold py-1 px-4 rounded-lg flex items-center justify-center mx-auto"
+                                        >
                                             <EyeIcon className="w-4 h-4 mr-2"/>
                                             View
                                         </button>

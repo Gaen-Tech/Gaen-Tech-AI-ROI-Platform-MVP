@@ -8,9 +8,11 @@ import { Leads } from './components/Leads';
 import { View, Lead, Company, AnalysisResult } from './types';
 import { useMockCompanies } from './hooks/useMockCompanies';
 
+const isDemoMode = !process.env.API_KEY;
+
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
-  const { companies, setCompanies } = useMockCompanies();
+  const { companies, setCompanies, refreshCompanies } = useMockCompanies();
   const [leads, setLeads] = useState<Lead[]>([]);
   
   const addLead = useCallback((company: Company, analysis: AnalysisResult) => {
@@ -50,7 +52,7 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Dashboard leads={leads} />;
       case 'discovery':
-        return <Discovery companies={companies} onAnalyzeComplete={addLead} />;
+        return <Discovery companies={companies} onAnalyzeComplete={addLead} onRefresh={refreshCompanies} />;
       case 'leads':
         return <Leads leads={leads} onUpdateStatus={updateLeadStatus} />;
       default:
@@ -62,7 +64,7 @@ const App: React.FC = () => {
     <div className="flex h-screen bg-gray-900 text-gray-100 font-sans">
       <Sidebar currentView={view} setView={setView} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header currentView={view} />
+        <Header currentView={view} isDemoMode={isDemoMode} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6 md:p-8">
           {renderView()}
         </main>
