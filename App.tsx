@@ -2,13 +2,14 @@
 import React, { useState, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
-import { Dashboard } from './components/Dashboard';
+// Fix: The Dashboard component is a default export, so it should be imported without curly braces.
+import Dashboard from './components/Dashboard';
 import { Discovery } from './components/Discovery';
 import { Leads } from './components/Leads';
 import { View, Lead, Company, AnalysisResult } from './types';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<View>('discovery');
+  const [view, setView] = useState<View>('dashboard');
   const [companies, setCompanies] = useState<Company[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   
@@ -47,19 +48,21 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (view) {
       case 'dashboard':
-        return <Dashboard leads={leads} />;
+        return <Dashboard leads={leads} setView={setView} />;
       case 'discovery':
         return <Discovery onAnalyzeComplete={addLead} setView={setView} />;
       case 'leads':
         return <Leads leads={leads} onUpdateStatus={updateLeadStatus} />;
       default:
-        return <Dashboard leads={leads} />;
+        return <Dashboard leads={leads} setView={setView} />;
     }
   };
 
   return (
     <div className="h-screen bg-gray-900 text-gray-100 font-sans">
       {view === 'discovery' ? (
+        renderView()
+      ) : view === 'dashboard' ? (
         renderView()
       ) : (
         <div className="flex h-full w-full">
