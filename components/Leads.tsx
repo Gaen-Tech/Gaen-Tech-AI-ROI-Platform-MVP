@@ -1,285 +1,194 @@
-
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Lead } from '../types';
-import { EyeIcon, FileTextIcon, LoadingSpinner, LinkIcon } from './icons/Icon';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import { ProposalForExport } from './ProposalForExport';
-
-const LeadDetailModal: React.FC<{ 
-    lead: Lead, 
-    onClose: () => void,
-    onExport: () => void,
-    isExporting: boolean 
-}> = ({ lead, onClose, onExport, isExporting }) => {
-    return (
-        <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={onClose}
-        >
-            <div 
-                className="bg-gray-800 w-full max-w-2xl rounded-lg border border-gray-700 shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto"
-                onClick={e => e.stopPropagation()}
-            >
-                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white z-10">&times;</button>
-                 <div className="p-4">
-                     <h2 className="text-2xl font-bold text-white mb-2">{lead.name}</h2>
-                     <p className="text-sm text-brand-primary mb-4"><a href={`http://${lead.website}`} target="_blank" rel="noopener noreferrer">{lead.website}</a></p>
-
-                     <div className="grid grid-cols-2 gap-4 mb-6 text-center">
-                        <div className="bg-gray-700/50 p-3 rounded-lg">
-                            <div className="text-xs text-gray-400">AI Opportunity Score</div>
-                            <div className="text-2xl font-semibold text-brand-primary">{lead.aiOpportunityScore} / 100</div>
-                        </div>
-                         <div className="bg-gray-700/50 p-3 rounded-lg">
-                            <div className="text-xs text-gray-400">Est. Total Annual ROI</div>
-                            <div className="text-2xl font-semibold text-green-400">${lead.estimatedRoi.toLocaleString()}</div>
-                        </div>
-                     </div>
-
-                     <h3 className="text-xl font-semibold text-white mb-4 border-b border-gray-600 pb-2">Key Opportunities</h3>
-                     <div className="space-y-4">
-                        {lead.keyOpportunities.map((op, index) => (
-                            <div key={index} className="bg-gray-900/50 p-4 rounded-lg border border-gray-700">
-                                <h4 className="font-bold text-brand-primary">{op.opportunity}</h4>
-                                <p className="text-sm mt-2"><strong className="text-gray-300">The Problem:</strong> {op.problem}</p>
-                                <p className="text-sm mt-1"><strong className="text-gray-300">Our Solution:</strong> {op.solution}</p>
-                                <div className="mt-2 text-xs flex justify-between items-center bg-gray-700/50 p-2 rounded">
-                                    <span>ROI TIMELINE: <strong className="text-yellow-400">{op.roiTimeline}</strong></span>
-                                    <span>EST. IMPACT: <strong className="text-green-400">${op.estimatedImpact.toLocaleString()}</strong></span>
-                                </div>
-                            </div>
-                        ))}
-                     </div>
-                     
-                     {lead.sources && lead.sources.length > 0 && (
-                        <div className="mt-6">
-                            <h3 className="text-xl font-semibold text-white mb-4 border-b border-gray-600 pb-2 flex items-center">
-                                <LinkIcon className="w-5 h-5 mr-2" /> Analysis Sources
-                            </h3>
-                            <p className="text-xs text-gray-400 mb-3">The AI used the following web pages to ground its analysis. You can review them to verify the findings.</p>
-                            <ul className="space-y-2 text-sm">
-                                {lead.sources.map((source, index) => (
-                                    <li key={index} className="bg-gray-900/50 p-2 rounded-lg border border-gray-700 truncate">
-                                        <a href={source.web.uri} target="_blank" rel="noopener noreferrer" className="text-brand-primary hover:underline" title={source.web.uri}>
-                                            {source.web.title || source.web.uri}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                     )}
-
-                      <div className="mt-6 pt-4 border-t border-gray-700 flex justify-end">
-                        <button
-                            onClick={onExport}
-                            disabled={isExporting}
-                            className="bg-brand-primary hover:bg-brand-secondary text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
-                        >
-                            {isExporting ? <LoadingSpinner className="w-5 h-5 mr-2" /> : <FileTextIcon className="w-5 h-5 mr-2" />}
-                            {isExporting ? 'Exporting...' : 'Export as PDF'}
-                        </button>
-                    </div>
-                 </div>
-            </div>
-        </div>
-    );
-};
+import React, { useState } from 'react';
+import { 
+  SparklesIcon, 
+  SearchIcon,
+  FilterIcon,
+  DownloadIcon,
+  TrendingUpIcon,
+  TargetIcon,
+  BarChart3Icon,
+  DollarSignIcon,
+  ClockIcon,
+  ExternalLinkIcon,
+  ChevronDownIcon,
+  FileTextIcon
+} from './icons/Icon';
+import type { Lead, View, LeadStatus } from '../types';
+import { generateProposal } from '../services/proposalService';
 
 interface LeadsProps {
-    leads: Lead[];
-    onUpdateStatus: (leadId: number, status: Lead['status']) => void;
+  leads: Lead[];
+  onUpdateLead: (id: string, updates: Partial<Lead>) => void;
+  setView: (view: View) => void;
 }
 
-export const Leads: React.FC<LeadsProps> = ({ leads, onUpdateStatus }) => {
-    const [roiFilter, setRoiFilter] = useState(0);
-    const [statusFilter, setStatusFilter] = useState<'All' | Lead['status']>('All');
-    const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-    const [leadForExport, setLeadForExport] = useState<Lead | null>(null);
-    const [isExporting, setIsExporting] = useState(false);
-    const proposalRef = useRef<HTMLDivElement>(null);
+const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'prospected' | 'qualified'>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'score' | 'roi'>('date');
 
-    useEffect(() => {
-        if (leadForExport) {
-            const exportDoc = async () => {
-                // Use requestAnimationFrame to ensure the component has been painted to the DOM before capture.
-                // This is more reliable than a fixed setTimeout.
-                requestAnimationFrame(async () => {
-                    if (!proposalRef.current) {
-                        console.error("Proposal component ref is not available for PDF export.");
-                        alert("Could not generate PDF: component not ready. Please try again.");
-                        setIsExporting(false);
-                        setLeadForExport(null);
-                        return;
-                    }
-    
-                    setIsExporting(true);
-                    try {
-                        const canvas = await html2canvas(proposalRef.current, {
-                            scale: 2,
-                            backgroundColor: '#1F2937',
-                            useCORS: true,
-                        });
-                        
-                        const imgData = canvas.toDataURL('image/png');
-                        const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-                        
-                        const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = pdf.internal.pageSize.getHeight();
-                        const imgProps = pdf.getImageProperties(imgData);
-                        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  const filteredLeads = leads
+    .filter(lead => {
+      const matchesSearch = lead.company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          lead.company.website.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'score':
+          return b.analysis.opportunityScore - a.analysis.opportunityScore;
+        case 'roi':
+          return b.analysis.totals.estimatedAnnualROI - a.analysis.totals.estimatedAnnualROI;
+        case 'date':
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
 
-                        let heightLeft = imgHeight;
-                        let position = 0;
-    
-                        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                        heightLeft -= pdfHeight;
-    
-                        while (heightLeft > 0) {
-                            position -= pdfHeight;
-                            pdf.addPage();
-                            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                            heightLeft -= pdfHeight;
-                        }
-    
-                        pdf.save(`GaenTech_Proposal_${leadForExport.name.replace(/\s+/g, '_')}.pdf`);
-    
-                    } catch (error) {
-                        console.error("Failed to export PDF:", error);
-                        alert("An error occurred while exporting the PDF. Please check the console for details.");
-                    } finally {
-                        setIsExporting(false);
-                        setLeadForExport(null);
-                    }
-                });
-            };
-            
-            exportDoc();
-        }
-    }, [leadForExport]);
-    
-    const roiOptions = [0, 50000, 100000, 250000, 500000];
-    const leadStatusOptions: ('All' | Lead['status'])[] = ['All', 'Prospected', 'Contacted', 'Qualified', 'Closed'];
+  const handleExportPDF = async (lead: Lead) => {
+    try {
+      await generateProposal(lead);
+    } catch (error) {
+      alert('Failed to generate proposal. See console for details.');
+      console.error('Failed to generate proposal:', error);
+    }
+  };
 
-    const filteredLeads = useMemo(() => {
-        return leads
-            .filter(lead => {
-                const passesRoi = lead.estimatedRoi >= roiFilter;
-                const passesStatus = statusFilter === 'All' || lead.status === statusFilter;
-                return passesRoi && passesStatus;
-            })
-            .sort((a, b) => b.aiOpportunityScore - a.aiOpportunityScore);
-    }, [leads, roiFilter, statusFilter]);
+  const handleStatusChange = (leadId: string, newStatus: LeadStatus) => {
+    onUpdateLead(leadId, { status: newStatus });
+  };
 
-    return (
-        <>
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg">
-                <div className="flex justify-end items-center mb-6 gap-4">
-                    <div>
-                        <label htmlFor="status-filter" className="text-sm font-medium text-gray-300 mr-2">Status:</label>
-                        <select
-                            id="status-filter"
-                            aria-label="Filter leads by status"
-                            className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value as 'All' | Lead['status'])}
-                        >
-                            {leadStatusOptions.map(status => (
-                                <option key={status} value={status}>{status}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label htmlFor="roi-filter" className="text-sm font-medium text-gray-300 mr-2">Minimum ROI:</label>
-                        <select
-                            id="roi-filter"
-                            aria-label="Filter leads by minimum estimated ROI"
-                            className="bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                            value={roiFilter}
-                            onChange={(e) => setRoiFilter(Number(e.target.value))}
-                        >
-                            {roiOptions.map(val => (
-                               <option key={val} value={val}>
-                                   {val > 0 ? `$${(val/1000).toFixed(0)}k+` : 'All'}
-                               </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
+  const totalROI = filteredLeads.reduce((sum, lead) => 
+    sum + (lead.analysis.totals.estimatedAnnualROI || 0), 0
+  );
+  const avgScore = filteredLeads.length > 0
+    ? Math.round(filteredLeads.reduce((sum, lead) => sum + lead.analysis.opportunityScore, 0) / filteredLeads.length)
+    : 0;
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="border-b border-gray-600">
-                            <tr>
-                                <th className="p-3 text-sm font-semibold">Company</th>
-                                <th className="p-3 text-sm font-semibold">AI Score</th>
-                                <th className="p-3 text-sm font-semibold">Est. ROI</th>
-                                <th className="p-3 text-sm font-semibold">Status</th>
-                                <th className="p-3 text-sm font-semibold text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredLeads.map(lead => (
-                                <tr key={lead.id} className="border-b border-gray-700 hover:bg-gray-700/50">
-                                    <td className="p-3 font-medium">{lead.name}</td>
-                                    <td className="p-3 font-semibold text-brand-primary">{lead.aiOpportunityScore} / 100</td>
-                                    <td className="p-3 text-green-400">${lead.estimatedRoi.toLocaleString()}</td>
-                                    <td className="p-3">
-                                         <select 
-                                            value={lead.status}
-                                            onChange={(e) => onUpdateStatus(lead.id, e.target.value as Lead['status'])}
-                                            className="bg-gray-700 border border-gray-600 rounded py-1 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-primary"
-                                            aria-label={`Update status for ${lead.name}`}
-                                        >
-                                            <option>Prospected</option>
-                                            <option>Contacted</option>
-                                            <option>Qualified</option>
-                                            <option>Closed</option>
-                                        </select>
-                                    </td>
-                                    <td className="p-3 text-center">
-                                        <button 
-                                            onClick={() => setSelectedLead(lead)} 
-                                            title="View Details" 
-                                            aria-label={`View details for ${lead.name}`}
-                                            className="bg-brand-primary/20 hover:bg-brand-primary/40 text-brand-primary font-semibold py-1 px-4 rounded-lg flex items-center justify-center mx-auto"
-                                        >
-                                            <EyeIcon className="w-4 h-4 mr-2"/>
-                                            View
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {leads.length === 0 && (
-                        <div className="text-center py-8 text-gray-400">
-                            <p>No leads yet. Go to the Discovery page to analyze companies.</p>
-                        </div>
-                    )}
-                     {leads.length > 0 && filteredLeads.length === 0 && (
-                        <div className="text-center py-8 text-gray-400">
-                            <p>No leads match the current filters.</p>
-                        </div>
-                    )}
-                </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 relative overflow-hidden text-gray-100">
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-20 w-64 h-64 border border-cyan-400 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 border border-purple-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 w-72 h-72 border border-pink-400 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-6 py-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/logo.png" 
+              alt="Gaen Technologies" 
+              className="w-12 h-12 rounded-xl shadow-lg shadow-purple-500/50"
+              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                const target = e.currentTarget;
+                target.style.display = 'none';
+                const nextSibling = target.nextElementSibling;
+                if (nextSibling) (nextSibling as HTMLElement).classList.remove('hidden');
+              }}
+            />
+            <div className="hidden w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/50">
+              <SparklesIcon className="w-7 h-7 text-white" />
             </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Gaen Technologies</h1>
+              <p className="text-sm text-cyan-400">Simplify Life</p>
+            </div>
+          </div>
+          
+          <div className="flex gap-4">
+            <button onClick={() => setView('dashboard')} className="px-4 py-2 text-gray-300 hover:text-white transition">Dashboard</button>
+            <button onClick={() => setView('discovery')} className="px-4 py-2 text-white font-semibold bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition">Discovery</button>
+          </div>
+        </div>
+      </div>
 
-            {selectedLead && (
-              <LeadDetailModal 
-                lead={selectedLead} 
-                onClose={() => setSelectedLead(null)} 
-                onExport={() => setLeadForExport(selectedLead)}
-                isExporting={isExporting && leadForExport?.id === selectedLead.id}
-              />
+      <div className="relative z-10 container mx-auto px-6 py-8">
+        <div className="mb-8">
+          <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Lead Qualification</h2>
+          <p className="text-xl text-gray-300">Manage and qualify your AI-discovered opportunities</p>
+        </div>
+
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6"><div className="flex items-center justify-between mb-2"><TargetIcon className="w-8 h-8 text-cyan-400" /><span className="text-xs text-gray-400 uppercase tracking-wider">Showing</span></div><div className="text-3xl font-bold text-white">{filteredLeads.length}</div><p className="text-sm text-gray-400">Total Leads</p></div>
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6"><div className="flex items-center justify-between mb-2"><BarChart3Icon className="w-8 h-8 text-purple-400" /><span className="text-xs text-gray-400 uppercase tracking-wider">Average</span></div><div className="text-3xl font-bold text-white">{avgScore}/100</div><p className="text-sm text-gray-400">Opportunity Score</p></div>
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6"><div className="flex items-center justify-between mb-2"><DollarSignIcon className="w-8 h-8 text-pink-400" /><span className="text-xs text-gray-400 uppercase tracking-wider">Pipeline</span></div><div className="text-3xl font-bold text-white">${(totalROI / 1000).toFixed(0)}K</div><p className="text-sm text-gray-400">Total ROI Potential</p></div>
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6"><div className="flex items-center justify-between mb-2"><TrendingUpIcon className="w-8 h-8 text-orange-400" /><span className="text-xs text-gray-400 uppercase tracking-wider">Qualified</span></div><div className="text-3xl font-bold text-white">{leads.filter(l => l.status === 'qualified').length}</div><p className="text-sm text-gray-400">High Priority</p></div>
+        </div>
+
+        <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input type="text" placeholder="Search by company name or website..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-slate-900/80 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" />
+            </div>
+            <div className="relative">
+              <FilterIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)} className="pl-10 pr-10 py-3 bg-slate-900/80 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none cursor-pointer transition">
+                <option value="all">All Status</option>
+                <option value="prospected">Prospected</option>
+                <option value="qualified">Qualified</option>
+              </select>
+              <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+            </div>
+            <div className="relative">
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="pl-4 pr-10 py-3 bg-slate-900/80 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none cursor-pointer transition">
+                <option value="date">Latest First</option>
+                <option value="score">Highest Score</option>
+                <option value="roi">Highest ROI</option>
+              </select>
+              <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+            </div>
+          </div>
+        </div>
+
+        {filteredLeads.length === 0 ? (
+          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-12 text-center">
+            <TargetIcon className="w-20 h-20 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold text-white mb-2">{searchQuery || statusFilter !== 'all' ? 'No leads match your filters' : 'No leads yet'}</h3>
+            <p className="text-gray-400 mb-6">{searchQuery || statusFilter !== 'all' ? 'Try adjusting your search or filter criteria' : 'Start by analyzing your first company'}</p>
+            {!searchQuery && statusFilter === 'all' && (
+              <button onClick={() => setView('discovery')} className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition inline-flex items-center gap-2"><SparklesIcon className="w-5 h-5" />Discover First Lead</button>
             )}
-
-            {/* This component is rendered off-screen to be captured by html2canvas */}
-            {leadForExport && (
-                <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-                    <ProposalForExport lead={leadForExport} innerRef={proposalRef} />
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredLeads.map((lead) => (
+              <div key={lead.id} className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-purple-500/50 transition-all duration-300 group">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1"><h3 className="text-lg font-bold text-white mb-1 group-hover:text-cyan-400 transition">{lead.company.name}</h3>
+                    <a href={`https://${lead.company.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-cyan-400 transition flex items-center gap-1" onClick={(e) => e.stopPropagation()}>{lead.company.website}<ExternalLinkIcon className="w-3 h-3" /></a>
+                  </div>
+                  <div className="relative">
+                    <select value={lead.status} onChange={(e) => handleStatusChange(lead.id, e.target.value as any)} onClick={(e) => e.stopPropagation()} className={`px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer border-2 appearance-none pr-6 transition capitalize ${lead.status === 'qualified' ? 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/50 hover:bg-blue-500/30'}`}>
+                      <option value="prospected">Prospected</option>
+                      <option value="qualified">Qualified</option>
+                    </select>
+                  </div>
                 </div>
-            )}
-        </>
-    );
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><BarChart3Icon className="w-4 h-4 text-cyan-400" /><span className="text-sm">Opportunity Score</span></div><div className="flex items-center gap-2"><div className="w-24 h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full" style={{ width: `${lead.analysis.opportunityScore}%` }}></div></div><span className="text-sm font-bold text-white">{lead.analysis.opportunityScore}</span></div></div>
+                  <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" /><span className="text-sm">Annual ROI</span></div><span className="text-sm font-bold text-white">${(lead.analysis.totals.estimatedAnnualROI / 1000).toFixed(0)}K</span></div>
+                  <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><TargetIcon className="w-4 h-4 text-purple-400" /><span className="text-sm">Opportunities</span></div><span className="text-sm font-bold text-white">{lead.analysis.keyOpportunities.length}</span></div>
+                  <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><ClockIcon className="w-4 h-4 text-orange-400" /><span className="text-sm">Analyzed</span></div><span className="text-sm font-bold text-white">{new Date(lead.createdAt).toLocaleDateString()}</span></div>
+                </div>
+                {lead.analysis.keyOpportunities.length > 0 && (<div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700"><p className="text-xs text-gray-400 mb-1">Top Opportunity:</p><p className="text-sm text-white font-semibold line-clamp-2">{lead.analysis.keyOpportunities[0].opportunity}</p></div>)}
+                <div className="flex gap-2">
+                  <button onClick={() => handleExportPDF(lead)} className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition flex items-center justify-center gap-2"><DownloadIcon className="w-4 h-4" />Export PDF</button>
+                  <button className="px-4 py-2 bg-slate-700/50 text-gray-300 font-semibold rounded-lg hover:bg-slate-700 transition flex items-center justify-center gap-2" onClick={() => alert('Lead detail view coming soon!')}><FileTextIcon className="w-4 h-4" />Details</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="relative z-10 text-center py-8 mt-8">
+        <p className="text-gray-500 text-sm">#FutureIsSimple • www.gaentechnologies.com</p>
+      </div>
+    </div>
+  );
 };
+
+export default Leads;

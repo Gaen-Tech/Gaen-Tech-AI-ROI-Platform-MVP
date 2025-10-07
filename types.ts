@@ -1,4 +1,3 @@
-
 export type View = 'dashboard' | 'discovery' | 'leads';
 
 export enum Industry {
@@ -14,7 +13,6 @@ export enum Industry {
 }
 
 export interface Company {
-  id: number;
   name: string;
   website: string;
   industry: Industry;
@@ -23,7 +21,7 @@ export interface Company {
 }
 
 export interface OpportunityDetail {
-  opportunity: string;
+  opportunity: string; // Title of the opportunity
   problem: string;
   solution: string;
   roiTimeline: string;
@@ -38,14 +36,20 @@ export interface GroundingSource {
 }
 
 export interface AnalysisResult {
-  aiOpportunityScore: number;
+  opportunityScore: number;
   keyOpportunities: OpportunityDetail[];
-  estimatedRoi: number;
+  totals: {
+    estimatedAnnualROI: number;
+  };
   sources?: GroundingSource[];
 }
 
-export type LeadStatus = 'Prospected' | 'Contacted' | 'Qualified' | 'Closed';
+export type LeadStatus = 'prospected' | 'qualified';
 
-export interface Lead extends Company, AnalysisResult {
+export interface Lead {
+  id: string;
+  company: Company;
+  analysis: AnalysisResult;
   status: LeadStatus;
+  createdAt: string;
 }

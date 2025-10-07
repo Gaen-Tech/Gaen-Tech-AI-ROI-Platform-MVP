@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
     SparklesIcon,
@@ -21,13 +20,15 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
   const totalLeads = leads.length;
-  const qualifiedLeads = leads.filter(lead => lead.status === 'Qualified').length;
-  const totalROI = leads.reduce((sum, lead) => sum + (lead.estimatedRoi || 0), 0);
+  const qualifiedLeads = leads.filter(lead => lead.status === 'qualified').length;
+  const totalROI = leads.reduce((sum, lead) => sum + (lead.analysis.totals.estimatedAnnualROI || 0), 0);
   const avgOpportunityScore = leads.length > 0
-    ? Math.round(leads.reduce((sum, lead) => sum + lead.aiOpportunityScore, 0) / leads.length)
+    ? Math.round(leads.reduce((sum, lead) => sum + lead.analysis.opportunityScore, 0) / leads.length)
     : 0;
 
-  const recentLeads = [...leads].reverse().slice(0, 3);
+  const recentLeads = [...leads]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 relative overflow-hidden text-gray-100">
@@ -151,12 +152,12 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
                                 <div key={lead.id} className="p-4 bg-slate-900/50 rounded-lg border border-slate-700 hover:border-purple-500/50 transition cursor-pointer" onClick={() => setView('leads')}>
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2"><h4 className="text-white font-semibold">{lead.name}</h4><span className={`px-2 py-1 rounded text-xs font-semibold ${lead.status === 'Qualified' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}`}>{lead.status}</span></div>
-                                        <p className="text-gray-400 text-sm mb-2">{lead.website}</p>
+                                        <div className="flex items-center gap-3 mb-2"><h4 className="text-white font-semibold">{lead.company.name}</h4><span className={`px-2 py-1 rounded text-xs font-semibold capitalize ${lead.status === 'qualified' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}`}>{lead.status}</span></div>
+                                        <p className="text-gray-400 text-sm mb-2">{lead.company.website}</p>
                                         <div className="flex flex-wrap items-center gap-4 text-sm">
-                                            <div className="flex items-center gap-1 text-gray-400"><BarChart3Icon className="w-4 h-4 text-cyan-400" />Score: {lead.aiOpportunityScore}/100</div>
-                                            <div className="flex items-center gap-1 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" />${(lead.estimatedRoi / 1000).toFixed(0)}K ROI</div>
-                                            <div className="flex items-center gap-1 text-gray-400"><ClockIcon className="w-4 h-4 text-purple-400" />Analyzed recently</div>
+                                            <div className="flex items-center gap-1 text-gray-400"><BarChart3Icon className="w-4 h-4 text-cyan-400" />Score: {lead.analysis.opportunityScore}/100</div>
+                                            <div className="flex items-center gap-1 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" />${(lead.analysis.totals.estimatedAnnualROI / 1000).toFixed(0)}K ROI</div>
+                                            <div className="flex items-center gap-1 text-gray-400"><ClockIcon className="w-4 h-4 text-purple-400" />{new Date(lead.createdAt).toLocaleDateString()}</div>
                                         </div>
                                     </div>
                                     <ChevronRightIcon className="w-5 h-5 text-gray-600 mt-1" />

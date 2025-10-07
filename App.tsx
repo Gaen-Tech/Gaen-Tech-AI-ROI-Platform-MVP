@@ -1,33 +1,24 @@
-
 import React, { useState, useCallback } from 'react';
-import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
-// Fix: The Dashboard component is a default export, so it should be imported without curly braces.
 import Dashboard from './components/Dashboard';
 import { Discovery } from './components/Discovery';
-import { Leads } from './components/Leads';
-import { View, Lead, Company, AnalysisResult } from './types';
+import Leads from './components/Leads';
+import { View, Lead, Company, AnalysisResult, LeadStatus } from './types';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
-  const [companies, setCompanies] = useState<Company[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
-  
-  const refreshCompanies = useCallback(() => {
-    // This action now clears the manually discovered companies list if needed.
-    setCompanies([]);
-  }, []);
   
   const addLead = useCallback((company: Company, analysis: AnalysisResult) => {
     const newLead: Lead = {
-      ...company,
-      ...analysis,
-      status: 'Prospected'
+      id: Date.now().toString(),
+      company,
+      analysis,
+      status: 'prospected',
+      createdAt: new Date().toISOString(),
     };
     
     setLeads(prevLeads => {
-      // Avoid duplicates based on website
-      if(prevLeads.some(l => l.website === newLead.website)) {
+      if(prevLeads.some(l => l.company.website === newLead.company.website)) {
         alert("A lead for this website already exists.");
         return prevLeads;
       };
@@ -37,10 +28,10 @@ const App: React.FC = () => {
     setView('leads');
   }, []);
 
-  const updateLeadStatus = useCallback((leadId: number, status: Lead['status']) => {
+  const updateLead = useCallback((leadId: string, updates: Partial<Lead>) => {
     setLeads(prevLeads => 
       prevLeads.map(lead => 
-        lead.id === leadId ? { ...lead, status } : lead
+        lead.id === leadId ? { ...lead, ...updates } : lead
       )
     );
   }, []);
@@ -52,7 +43,7 @@ const App: React.FC = () => {
       case 'discovery':
         return <Discovery onAnalyzeComplete={addLead} setView={setView} />;
       case 'leads':
-        return <Leads leads={leads} onUpdateStatus={updateLeadStatus} />;
+        return <Leads leads={leads} onUpdateLead={updateLead} setView={setView} />;
       default:
         return <Dashboard leads={leads} setView={setView} />;
     }
@@ -60,21 +51,7 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen bg-gray-900 text-gray-100 font-sans">
-      {view === 'discovery' ? (
-        renderView()
-      ) : view === 'dashboard' ? (
-        renderView()
-      ) : (
-        <div className="flex h-full w-full">
-          <Sidebar currentView={view} setView={setView} />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <Header currentView={view} />
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6 md:p-8">
-              {renderView()}
-            </main>
-          </div>
-        </div>
-      )}
+      {renderView()}
     </div>
   );
 };

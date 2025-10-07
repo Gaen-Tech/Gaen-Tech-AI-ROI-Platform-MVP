@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SearchIcon, SparklesIcon, TrendingUpIcon, TargetIcon, ChevronRightIcon, AlertCircleIcon, LoadingSpinner } from './icons/Icon';
 import { analyzeCompanyWebsite } from '../services/geminiService';
@@ -39,7 +38,6 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
         }
         const hostname = new URL(formattedUrl).hostname.replace('www.', '');
         const tempCompany: Company = {
-            id: Date.now(),
             name: hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1),
             website: hostname,
             industry: 'Technology' as Industry,
