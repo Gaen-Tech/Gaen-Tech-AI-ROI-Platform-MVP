@@ -1,4 +1,3 @@
-
 # Gemini API Integration Guide
 
 This document details how the Gaen Tech platform interacts with the Google Gemini API, which is the core of our analysis engine.
@@ -39,7 +38,8 @@ The service layer is designed to be resilient to inconsistent API responses.
 3.  **Parsing**: `JSON.parse()` is used to convert the cleaned string into a JavaScript object.
 4.  **Validation & Fallbacks**: After parsing, the object is validated.
     - It checks for the presence and correct type of `aiOpportunityScore` and `keyOpportunities`.
-    - If `estimatedRoi` is missing, it is **calculated on the fly** by summing the `estimatedImpact` of each opportunity. This prevents data integrity issues and ensures leads are always displayed correctly.
+    - It validates that each opportunity within `keyOpportunities` contains all required fields (`opportunity`, `problem`, `solution`, `estimatedImpact`). Incomplete opportunities are discarded.
+    - If `estimatedRoi` is missing, it is **calculated on the fly** by summing the `estimatedImpact` of each valid opportunity. This prevents data integrity issues and ensures leads are always displayed correctly.
 5.  **Source Extraction**: The grounding sources are extracted from the `groundingMetadata` path. This provides the verifiable data that builds trust in the analysis.
 
 ## 5. Error Handling
@@ -48,4 +48,5 @@ The `analyzeCompanyWebsite` function has multi-layered error handling:
 - **Configuration Error**: It first checks if the `API_KEY` is available. If not, it throws an error to prevent any API calls.
 - **No Content Error**: It then checks if the API response contains any `candidates`. If not, it means the response was likely blocked (e.g., by safety filters), and it throws a specific, user-friendly error.
 - **Invalid Format Error**: If a JSON object cannot be found or parsed from the response text, it throws an error indicating the AI's response was malformed.
+- **Data Integrity Error**: Throws specific errors if the response is missing the `keyOpportunities` array, if all opportunities fail validation, or if the final calculated ROI is $0. This prevents bad data from entering the application.
 - **General Errors**: A top-level `try...catch` block handles network errors or other unexpected issues during the API call, relaying the message to the UI.

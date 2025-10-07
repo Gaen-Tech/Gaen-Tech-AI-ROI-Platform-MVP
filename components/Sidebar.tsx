@@ -31,9 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
   return (
     <div className="flex flex-col w-64 bg-gray-800 border-r border-gray-700 p-4">
       <div className="flex items-center mb-8">
-        <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center font-bold text-xl text-white">
-          G
-        </div>
+        <img src="/logo.png" alt="Gaen Tech Logo" className="w-10 h-10 rounded-lg" />
         <h1 className="text-xl font-bold ml-3">Gaen Tech</h1>
       </div>
       <nav className="flex flex-col space-y-2">

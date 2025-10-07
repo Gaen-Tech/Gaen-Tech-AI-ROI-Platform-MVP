@@ -1,209 +1,212 @@
 
-import React, { useState, useMemo } from 'react';
-import { Company, Industry, AnalysisResult } from '../types';
+import React, { useState } from 'react';
+import { SearchIcon, SparklesIcon, TrendingUpIcon, TargetIcon, ChevronRightIcon, AlertCircleIcon, LoadingSpinner } from './icons/Icon';
 import { analyzeCompanyWebsite } from '../services/geminiService';
-import { SearchIcon, LoadingSpinner, RefreshCwIcon } from './icons/Icon';
+import type { View, Company, AnalysisResult, Industry } from '../types';
 
 interface DiscoveryProps {
-    companies: Company[];
-    onAnalyzeComplete: (company: Company, analysis: AnalysisResult) => void;
-    onRefresh: () => void;
+  onAnalyzeComplete: (company: Company, analysis: AnalysisResult) => void;
+  setView: (view: View) => void;
 }
 
-export const Discovery: React.FC<DiscoveryProps> = ({ companies, onAnalyzeComplete, onRefresh }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [industryFilter, setIndustryFilter] = useState<Industry | 'All'>('All');
-    const [analyzingId, setAnalyzingId] = useState<number | null>(null);
-    const [url, setUrl] = useState('');
-    const [isAnalyzingUrl, setIsAnalyzingUrl] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView }) => {
+  const [url, setUrl] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
-    const filteredCompanies = useMemo(() => {
-        return companies.filter(company => {
-            const matchesSearch = company.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                  company.location.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesIndustry = industryFilter === 'All' || company.industry === industryFilter;
-            return matchesSearch && matchesIndustry;
-        });
-    }, [companies, searchTerm, industryFilter]);
+  const handleAnalyze = async () => {
+    if (!url) return;
 
-    const handleAnalyze = async (company: Company) => {
-        setAnalyzingId(company.id);
-        setError(null);
-        try {
-            const analysisResult = await analyzeCompanyWebsite(company);
-            onAnalyzeComplete(company, analysisResult);
-        } catch (err) {
-            console.error("Analysis failed for company:", company.name, err);
-            setError(err instanceof Error ? err.message : "An unknown error occurred.");
-        } finally {
-            setAnalyzingId(null);
+    setIsAnalyzing(true);
+    setError(null);
+    setProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
         }
-    };
+        return prev + 10;
+      });
+    }, 300);
 
-    const handleUrlAnalyze = async () => {
-        if (!url) return;
+    try {
         let formattedUrl = url.trim();
         if (!formattedUrl.startsWith('http')) {
             formattedUrl = 'https://' + formattedUrl;
         }
+        const hostname = new URL(formattedUrl).hostname.replace('www.', '');
+        const tempCompany: Company = {
+            id: Date.now(),
+            name: hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1),
+            website: hostname,
+            industry: 'Technology' as Industry,
+            location: 'Online',
+            contact: `info@${hostname}`
+        };
+        const analysisResult = await analyzeCompanyWebsite(tempCompany);
+        setProgress(100);
+      
+      setTimeout(() => {
+        onAnalyzeComplete(tempCompany, analysisResult);
+      }, 500);
+    } catch (err) {
+      clearInterval(progressInterval);
+      setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
+      setProgress(0);
+    } finally {
+      clearInterval(progressInterval);
+      // Keep isAnalyzing true until navigation happens via callback
+    }
+  };
 
-        setIsAnalyzingUrl(true);
-        setError(null);
-        try {
-            const hostname = new URL(formattedUrl).hostname.replace('www.', '');
-            const tempCompany: Company = {
-                id: Date.now(),
-                name: hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1),
-                website: hostname,
-                industry: Industry.TECH,
-                location: 'Online',
-                contact: `info@${hostname}`
-            };
-            const analysisResult = await analyzeCompanyWebsite(tempCompany);
-            onAnalyzeComplete(tempCompany, analysisResult);
-            setUrl('');
-        } catch (err) {
-            console.error("URL Analysis failed:", err);
-            setError(err instanceof Error ? err.message : "Failed to analyze URL. Please ensure it's a valid and accessible website.");
-        } finally {
-            setIsAnalyzingUrl(false);
-        }
-    };
-    
-    const handleExport = () => {
-        const headers = "Company Name,Website,Industry,Location,Contact\n";
-        const csvContent = filteredCompanies.map(c => 
-            `"${c.name}","${c.website}","${c.industry}","${c.location}","${c.contact}"`
-        ).join("\n");
-        
-        const blob = new Blob([headers + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "gaen_tech_discovery_export.csv");
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    };
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && url && !isAnalyzing) {
+      handleAnalyze();
+    }
+  };
 
-    return (
-        <div className="space-y-6">
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg">
-                <h3 className="text-lg font-semibold mb-4">Analyze New Company by URL</h3>
-                <div className="flex flex-col md:flex-row gap-2">
-                    <input
-                        type="text"
-                        placeholder="Enter website URL (e.g., example.com)"
-                        aria-label="Website URL for analysis"
-                        className="flex-grow bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleUrlAnalyze()}
-                    />
-                    <button
-                        onClick={handleUrlAnalyze}
-                        disabled={isAnalyzingUrl || analyzingId !== null}
-                        aria-label="Analyze Website URL"
-                        className="bg-brand-primary hover:bg-brand-secondary text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                        {isAnalyzingUrl ? <LoadingSpinner className="w-5 h-5" /> : 'Analyze URL'}
-                    </button>
-                </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/50 to-gray-900 relative overflow-hidden text-gray-100">
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-20 w-64 h-64 border border-cyan-400 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 border border-purple-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 w-72 h-72 border border-pink-400 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-6 py-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/logo.png" 
+              alt="Gaen Technologies" 
+              className="w-12 h-12 rounded-xl shadow-lg shadow-purple-500/50"
+            />
+            <div>
+              <h1 className="text-2xl font-bold text-white">Gaen Technologies</h1>
+              <p className="text-sm text-cyan-400">Simplify Life</p>
             </div>
-
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                    <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                        <div className="relative w-full md:w-64">
-                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <input
-                                type="text"
-                                placeholder="Search companies..."
-                                aria-label="Search for a company by name or location"
-                                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <select
-                            aria-label="Filter companies by industry"
-                            className="w-full md:w-auto bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                            value={industryFilter}
-                            onChange={(e) => setIndustryFilter(e.target.value as Industry | 'All')}
-                        >
-                            <option value="All">All Industries</option>
-                            {Object.values(Industry).map(ind => <option key={ind} value={ind}>{ind}</option>)}
-                        </select>
-                    </div>
-                    <div className="w-full md:w-auto flex flex-col md:flex-row gap-2">
-                         <button 
-                          onClick={onRefresh}
-                          aria-label="Refresh the list of companies"
-                          className="w-full md:w-auto bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
-                        >
-                            <RefreshCwIcon className="w-4 h-4 mr-2" />
-                            Refresh List
-                        </button>
-                        <button 
-                          onClick={handleExport}
-                          aria-label="Export the current list of companies to a CSV file"
-                          className="w-full md:w-auto bg-brand-secondary hover:bg-brand-primary text-white font-bold py-2 px-4 rounded-lg transition-colors"
-                        >
-                            Export List
-                        </button>
-                    </div>
-                </div>
-                {error && <div className="bg-red-500/20 text-red-300 p-3 rounded-lg mb-4 text-center">{error}</div>}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="border-b border-gray-600">
-                            <tr>
-                                <th className="p-3 text-sm font-semibold">Company Name</th>
-                                <th className="p-3 text-sm font-semibold">Website</th>
-                                <th className="p-3 text-sm font-semibold">Industry</th>
-                                <th className="p-3 text-sm font-semibold">Location</th>
-                                <th className="p-3 text-sm font-semibold">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredCompanies.map(company => (
-                                <tr key={company.id} className="border-b border-gray-700 hover:bg-gray-700/50">
-                                    <td className="p-3">{company.name}</td>
-                                    <td className="p-3 text-brand-primary hover:underline"><a href={`http://${company.website}`} target="_blank" rel="noopener noreferrer">{company.website}</a></td>
-                                    <td className="p-3">{company.industry}</td>
-                                    <td className="p-3">{company.location}</td>
-                                    <td className="p-3 text-center">
-                                        <button
-                                            onClick={() => handleAnalyze(company)}
-                                            disabled={analyzingId !== null || isAnalyzingUrl}
-                                            aria-label={`Analyze ${company.name}`}
-                                            className="bg-brand-primary hover:bg-brand-secondary text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center w-36"
-                                        >
-                                            {analyzingId === company.id ? (
-                                                <>
-                                                    <LoadingSpinner className="w-5 h-5 mr-2" />
-                                                    Analyzing...
-                                                </>
-                                            ) : (
-                                                'Analyze Company'
-                                            )}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                     {filteredCompanies.length === 0 && (
-                        <div className="text-center py-8 text-gray-400">
-                            <p>No companies found matching your criteria.</p>
-                        </div>
-                    )}
-                </div>
-            </div>
+          </div>
+          
+          <div className="flex gap-4">
+            <button 
+              onClick={() => setView('dashboard')}
+              className="px-4 py-2 text-gray-300 hover:text-white transition"
+            >
+              Dashboard
+            </button>
+            <button 
+              onClick={() => setView('leads')}
+              className="px-4 py-2 text-white font-semibold bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition"
+            >
+              Leads
+            </button>
+          </div>
         </div>
-    );
+      </div>
+
+      <div className="relative z-10 container mx-auto px-6 py-12">
+        <div className="max-w-4xl mx-auto mb-8">
+          <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold">
+                1
+              </div>
+              <span className="text-cyan-400 font-semibold">DISCOVER</span>
+            </div>
+            <ChevronRightIcon className="text-gray-600" />
+            <div className="flex items-center gap-2 opacity-50"><div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-bold">2</div><span className="text-gray-500">ANALYZE</span></div>
+            <ChevronRightIcon className="text-gray-600" />
+            <div className="flex items-center gap-2 opacity-50"><div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-bold">3</div><span className="text-gray-500">QUALIFY</span></div>
+          </div>
+        </div>
+
+        <div className="text-center mb-12 max-w-4xl mx-auto">
+          <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            AI-Powered ROI Discovery
+          </h2>
+          <p className="text-xl text-gray-300">
+            From Website Analysis to Proposal in Minutes
+          </p>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 p-8 shadow-2xl">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-white mb-2">Company Discovery</h3>
+              <p className="text-gray-400">Enter a company website URL to begin AI-powered analysis</p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="relative">
+                <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="https://example.com"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-900/80 border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  disabled={isAnalyzing}
+                />
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400">
+                  <AlertCircleIcon className="w-5 h-5 flex-shrink-0" />
+                  <p className="text-sm">{error}</p>
+                </div>
+              )}
+
+              <button
+                onClick={handleAnalyze}
+                disabled={!url || isAnalyzing}
+                className="w-full py-4 bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <LoadingSpinner className="w-5 h-5" />
+                    Analyzing... {progress}%
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="w-5 h-5" />
+                    Start AI Analysis
+                  </>
+                )}
+              </button>
+            </div>
+
+            {isAnalyzing && (
+              <div className="mt-6 space-y-4">
+                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 transition-all duration-300 rounded-full"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
+                    <SearchIcon className="w-6 h-6 text-cyan-400 mx-auto mb-2 animate-pulse" />
+                    <p className="text-sm text-gray-400">Scanning Website</p>
+                  </div>
+                  <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
+                    <TargetIcon className="w-6 h-6 text-purple-400 mx-auto mb-2 animate-pulse" />
+                    <p className="text-sm text-gray-400">Finding Opportunities</p>
+                  </div>
+                  <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
+                    <TrendingUpIcon className="w-6 h-6 text-pink-400 mx-auto mb-2 animate-pulse" />
+                    <p className="text-sm text-gray-400">Calculating ROI</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };

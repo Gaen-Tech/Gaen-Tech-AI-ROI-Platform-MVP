@@ -8,7 +8,7 @@ import { Leads } from './components/Leads';
 import { View, Lead, Company, AnalysisResult } from './types';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<View>('dashboard');
+  const [view, setView] = useState<View>('discovery');
   const [companies, setCompanies] = useState<Company[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   
@@ -49,7 +49,7 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Dashboard leads={leads} />;
       case 'discovery':
-        return <Discovery companies={companies} onAnalyzeComplete={addLead} onRefresh={refreshCompanies} />;
+        return <Discovery onAnalyzeComplete={addLead} setView={setView} />;
       case 'leads':
         return <Leads leads={leads} onUpdateStatus={updateLeadStatus} />;
       default:
@@ -58,14 +58,20 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-100 font-sans">
-      <Sidebar currentView={view} setView={setView} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header currentView={view} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6 md:p-8">
-          {renderView()}
-        </main>
-      </div>
+    <div className="h-screen bg-gray-900 text-gray-100 font-sans">
+      {view === 'discovery' ? (
+        renderView()
+      ) : (
+        <div className="flex h-full w-full">
+          <Sidebar currentView={view} setView={setView} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Header currentView={view} />
+            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6 md:p-8">
+              {renderView()}
+            </main>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
