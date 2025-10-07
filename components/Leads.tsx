@@ -23,11 +23,6 @@ const LeadDetailModal: React.FC<{
             >
                  <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white z-10">&times;</button>
                  <div className="p-4">
-                     {lead.isMockData && (
-                        <div className="bg-yellow-500/10 text-yellow-300 p-3 rounded-lg mb-4 text-sm text-center border border-yellow-500/30">
-                            <strong>Demo Data:</strong> This analysis was generated for demonstration purposes and does not reflect a real-time AI analysis of the company.
-                        </div>
-                     )}
                      <h2 className="text-2xl font-bold text-white mb-2">{lead.name}</h2>
                      <p className="text-sm text-brand-primary mb-4"><a href={`http://${lead.website}`} target="_blank" rel="noopener noreferrer">{lead.website}</a></p>
 

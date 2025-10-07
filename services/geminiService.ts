@@ -1,71 +1,17 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
-import { Company, AnalysisResult, Lead, OpportunityDetail } from '../types';
+import { GoogleGenAI } from "@google/genai";
+import { Company, AnalysisResult, OpportunityDetail } from '../types';
 
 const API_KEY = process.env.API_KEY;
 
 if (!API_KEY) {
-  // This is a fallback for development. In a real environment, the API key should be set.
-  console.warn("API_KEY environment variable not set. Using a placeholder. AI features will not work.");
+  throw new Error("API_KEY environment variable is required. Please add your Gemini API key.");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY || "YOUR_API_KEY_HERE" });
-
-/**
- * Generates dynamic and varied mock analysis data.
- * This is used as a fallback when the Gemini API key is not available.
- */
-const generateMockAnalysis = (): AnalysisResult => {
-    const opportunitiesPool = [
-        { opportunity: 'AI Conversational Agent', problem: 'High bounce rate on landing pages due to unanswered user questions.', solution: 'Deploy an AI agent to engage visitors, answer queries in real-time, and guide them to conversion.' },
-        { opportunity: 'Automated Content Personalization', problem: 'Generic content fails to engage a large user base, leading to low subscription conversion.', solution: 'Use AI to analyze user behavior and dynamically present articles and offers tailored to their interests, boosting engagement and subscriptions.' },
-        { opportunity: 'Predictive Lead Scoring', problem: 'Sales team wastes time on low-quality leads, reducing efficiency.', solution: 'Implement an AI model to score leads based on their likelihood to convert, allowing sales to focus on high-value prospects.' },
-        { opportunity: 'Dynamic Pricing Engine', problem: 'Leaving revenue on the table with a static, one-size-fits-all pricing model.', solution: 'Use AI to adjust prices in real-time based on market demand, competitor pricing, and customer behavior to maximize revenue.' },
-        { opportunity: 'AI-Powered Inventory Optimization', problem: 'High carrying costs due to overstocking or lost sales from stockouts.', solution: 'Leverage AI to forecast demand more accurately and optimize inventory levels across all sales channels.' },
-        { opportunity: 'Internal Knowledge Base AI', problem: 'Employees struggle to find information in scattered internal documents, slowing down operations.', solution: 'Create an AI-powered search for the internal knowledge base that understands natural language queries and provides instant answers.' }
-    ];
-
-    const shuffledOpportunities = opportunitiesPool.sort(() => 0.5 - Math.random());
-    const selectedCount = Math.floor(Math.random() * 2) + 2; // Select 2 or 3 opportunities
-    const keyOpportunities: OpportunityDetail[] = [];
-    let estimatedRoi = 0;
-
-    for (let i = 0; i < selectedCount; i++) {
-        const opportunity = shuffledOpportunities[i];
-        // Ensure estimated impact is a round number, looks more professional
-        const estimatedImpact = Math.round((Math.random() * (150000 - 50000) + 50000) / 5000) * 5000;
-        const roiTimeline = `${Math.floor(Math.random() * 4) + 2}-${Math.floor(Math.random() * 6) + 6} months`;
-        
-        keyOpportunities.push({ ...opportunity, roiTimeline, estimatedImpact });
-        estimatedRoi += estimatedImpact;
-    }
-
-    // Adhere to the < $500k business rule
-    while (estimatedRoi > 480000) {
-        estimatedRoi = 0;
-        keyOpportunities.forEach(op => {
-            op.estimatedImpact = Math.round((op.estimatedImpact * 0.9) / 1000) * 1000;
-            estimatedRoi += op.estimatedImpact;
-        });
-    }
-
-    return {
-        aiOpportunityScore: Math.floor(Math.random() * (96 - 75 + 1)) + 75, // Score between 75 and 96
-        keyOpportunities,
-        estimatedRoi: Math.round(estimatedRoi / 1000) * 1000,
-        sources: [],
-        isMockData: true, // Explicitly flag this as mock data
-    };
-};
+const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 export const analyzeCompanyWebsite = async (company: Company): Promise<AnalysisResult> => {
-  if (!API_KEY) {
-    console.log("No API Key, returning dynamic mock data.");
-    // Return DYNAMIC mock data if API key is not available
-    return new Promise(resolve => setTimeout(() => resolve(generateMockAnalysis()), 1500));
-  }
-
- const prompt = `
+  const prompt = `
     You are a senior AI business consultant for "Gaen Tech", a company that delivers digital transformation and simplifies business through AI.
     Your goal is to analyze a potential lead based on their company information and website to identify high-value opportunities for AI-driven ROI. You MUST use real-time data from your search tool to ensure the analysis is accurate and up-to-date.
     
@@ -80,16 +26,34 @@ export const analyzeCompanyWebsite = async (company: Company): Promise<AnalysisR
 
     1.  **AI Opportunity Score**: Calculate a score out of 100 based on their digital presence, industry, and potential for AI integration.
     2.  **Key Opportunities**: Identify the 2-3 most impactful AI opportunities. For each opportunity:
-        - **Problem**: Clearly state the business problem or inefficiency, supported by your search. Frame it in terms of missed revenue or high operational costs.
-        - **Solution**: Describe Gaen Tech's AI solution in simple terms. Focus on the value proposition.
-        - **ROI Timeline**: Provide a realistic timeframe for seeing a positive return (e.g., "1-4 months").
-        - **Estimated Impact**: Quantify the potential annual financial benefit in USD.
-    3.  **Estimated Total ROI**: Sum up the impacts to give a total estimated annual ROI. This value MUST NOT exceed $500,000.
+        - **opportunity**: Brief title of the opportunity
+        - **problem**: Clearly state the business problem or inefficiency, supported by your search. Frame it in terms of missed revenue or high operational costs.
+        - **solution**: Describe Gaen Tech's AI solution in simple terms. Focus on the value proposition.
+        - **roiTimeline**: Provide a realistic timeframe for seeing a positive return (e.g., "2-8 months").
+        - **estimatedImpact**: Quantify the potential annual financial benefit in USD.
+    3.  **estimatedRoi**: Sum up the impacts to give a total estimated annual ROI. This value MUST NOT exceed $500,000.
 
     Return your analysis strictly in JSON format, containing an object with keys: "aiOpportunityScore", "keyOpportunities", and "estimatedRoi". Do not include any explanatory text, markdown formatting, or anything outside of the JSON object.
+    
+    Example format:
+    {
+      "aiOpportunityScore": 85,
+      "keyOpportunities": [
+        {
+          "opportunity": "AI Chatbot",
+          "problem": "High customer service costs",
+          "solution": "Automated 24/7 support",
+          "roiTimeline": "3-6 months",
+          "estimatedImpact": 150000
+        }
+      ],
+      "estimatedRoi": 150000
+    }
   `;
 
   try {
+    console.log("🔍 Analyzing company:", company.name);
+    
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
@@ -100,24 +64,27 @@ export const analyzeCompanyWebsite = async (company: Company): Promise<AnalysisR
     });
 
     if (!response.candidates || response.candidates.length === 0) {
-        console.error("Gemini API returned no candidates. The response may have been blocked.", response);
-        throw new Error("Analysis failed: The AI returned no content. This may be due to safety filters or an issue with the target website.");
+      console.error("❌ Gemini API returned no candidates.", response);
+      throw new Error("Analysis failed: The AI returned no content. This may be due to safety filters or an issue with the target website.");
     }
     
     let jsonText = response.text.trim();
+    console.log("📄 Raw AI Response (first 500 chars):", jsonText.substring(0, 500));
     
     // Robustly find the JSON object within the response text
     const jsonStartIndex = jsonText.indexOf('{');
     const jsonEndIndex = jsonText.lastIndexOf('}');
 
     if (jsonStartIndex === -1 || jsonEndIndex === -1 || jsonEndIndex < jsonStartIndex) {
-        console.error("Gemini API response did not contain a valid JSON object.", response.text);
+        console.error("❌ Gemini API response did not contain a valid JSON object.", response.text);
         throw new Error("Analysis failed: The AI response was not in the expected format.");
     }
 
     jsonText = jsonText.substring(jsonStartIndex, jsonEndIndex + 1);
+    console.log("📋 Extracted JSON:", jsonText);
     
     const analysis = JSON.parse(jsonText);
+    console.log("✅ Parsed analysis:", analysis);
     
     // --- Data Validation and Fallbacks ---
     const validatedAnalysis: Partial<AnalysisResult> = {};
@@ -126,35 +93,65 @@ export const analyzeCompanyWebsite = async (company: Company): Promise<AnalysisR
     validatedAnalysis.aiOpportunityScore = typeof analysis.aiOpportunityScore === 'number'
       ? analysis.aiOpportunityScore
       : 75; // Default score if missing
+    
+    console.log("✅ AI Score:", validatedAnalysis.aiOpportunityScore);
 
     // Validate keyOpportunities
     if (Array.isArray(analysis.keyOpportunities) && analysis.keyOpportunities.length > 0) {
-      validatedAnalysis.keyOpportunities = analysis.keyOpportunities.filter(op => 
-        op && typeof op.opportunity === 'string' && typeof op.estimatedImpact === 'number'
-      );
+      console.log("🔍 Validating", analysis.keyOpportunities.length, "opportunities");
+      
+      validatedAnalysis.keyOpportunities = analysis.keyOpportunities.filter((op: OpportunityDetail, index: number) => {
+        const isValid = op && 
+          typeof op.opportunity === 'string' && 
+          typeof op.estimatedImpact === 'number' &&
+          typeof op.problem === 'string' &&
+          typeof op.solution === 'string';
+        
+        if (!isValid) {
+          console.warn(`⚠️ Opportunity ${index} failed validation:`, op);
+        }
+        return isValid;
+      });
+      
+      console.log("✅ Valid opportunities:", validatedAnalysis.keyOpportunities.length);
+      
+      if (validatedAnalysis.keyOpportunities.length === 0) {
+        throw new Error("Analysis failed: All opportunities were invalid. The AI may have returned incomplete data.");
+      }
     } else {
+      console.error("❌ No opportunities array in response:", analysis);
       throw new Error("Analysis failed: The AI response was missing key opportunity data.");
     }
     
     // Validate or calculate estimatedRoi
-    if (typeof analysis.estimatedRoi === 'number') {
+    if (typeof analysis.estimatedRoi === 'number' && analysis.estimatedRoi > 0) {
       validatedAnalysis.estimatedRoi = analysis.estimatedRoi;
+      console.log("✅ ROI from API:", validatedAnalysis.estimatedRoi);
     } else {
-      console.warn("API response missing 'estimatedRoi'. Calculating from opportunities.");
+      console.warn("⚠️ API response missing 'estimatedRoi'. Calculating from opportunities.");
       validatedAnalysis.estimatedRoi = validatedAnalysis.keyOpportunities.reduce(
         (sum, op) => sum + (op.estimatedImpact || 0), 0
       );
+      console.log("✅ Calculated ROI:", validatedAnalysis.estimatedRoi);
     }
+    
+    // Ensure ROI is not 0
+    if (validatedAnalysis.estimatedRoi === 0) {
+      console.error("❌ Final ROI is 0! Opportunities:", validatedAnalysis.keyOpportunities);
+      throw new Error("Analysis failed: ROI calculated to $0. This indicates a data problem.");
+    }
+    
     // --- End Validation ---
 
     const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    console.log("✅ Found", sources.length, "sources");
     
-    return { ...validatedAnalysis as AnalysisResult, sources, isMockData: false }; // Flag live data
+    return { ...validatedAnalysis as AnalysisResult, sources };
 
   } catch (error) {
-    console.error("Error analyzing company website with Gemini API:", error);
-    if (error instanceof SyntaxError) { // This means JSON.parse failed
-        throw new Error("Failed to parse AI analysis. The model returned malformed JSON. Please try again.");
+    console.error("❌ Error analyzing company website with Gemini API:", error);
+    if (error instanceof SyntaxError) {
+      throw new Error("Failed to parse AI analysis. The model returned malformed JSON. Please try again.");
     }
     throw new Error(error instanceof Error ? error.message : "An unknown error occurred during AI analysis.");
   }

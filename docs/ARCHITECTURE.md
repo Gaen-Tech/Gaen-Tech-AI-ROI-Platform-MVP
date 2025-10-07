@@ -1,3 +1,4 @@
+
 # Application Architecture
 
 This document provides a high-level overview of the technical architecture for the Gaen Tech AI ROI Generation Platform.
@@ -21,7 +22,7 @@ The codebase is organized into logical directories to maintain separation of con
 
 - `components/`: Contains all reusable React components. This is the primary building block of the UI.
 - `services/`: Handles external API communication, abstracting the data-fetching logic from the components. `geminiService.ts` is the key file here.
-- `hooks/`: Stores custom React hooks. Currently used for providing a dynamic, geo-targeted list of mock companies (`useMockCompanies.ts`).
+- `hooks/`: Stores custom React hooks.
 - `types.ts`: A central location for all TypeScript type definitions, ensuring data consistency across the application.
 
 ## 4. State Management
@@ -37,17 +38,11 @@ For the MVP, we have adopted a localized state management approach using **React
 ### Robust Service Layer (`geminiService.ts`)
 
 The service layer is designed to be highly resilient. Instead of just making an API call, it's responsible for:
+- **Error Handling**: Throwing a clear error if the required `API_KEY` is not configured.
 - **Prompt Engineering**: Crafting precise instructions for the AI model.
 - **Resilient Parsing**: Intelligently extracting a valid JSON object from the AI's response, even if it contains extraneous text.
 - **Response Validation**: Proactively checking if the AI's response is empty or blocked by safety filters, providing clear errors to the user.
 - **Data Integrity**: Validating the structure of the AI's response and providing fallbacks for critical missing data (e.g., calculating `estimatedRoi` if it's not provided).
-
-### "Demo Mode" for Transparency and Development
-
-A key architectural decision is the implementation of a transparent "Demo Mode".
-- **Trigger**: The application automatically enters Demo Mode if the `API_KEY` environment variable is not present.
-- **Mechanism**: The `geminiService` intercepts the call and routes it to an internal `generateMockAnalysis` function, which creates dynamic, varied, and realistic sample data.
-- **User-Facing Indicators**: The system ensures the user is always aware they are in Demo Mode through a global header badge, warning messages in the UI, and watermarks on PDF exports. This builds trust and provides a seamless development/demonstration experience without needing a live API key.
 
 ## 6. Data Flow Diagram (Conceptual)
 
@@ -63,7 +58,7 @@ This diagram illustrates the primary workflow of analyzing a company and generat
 [handleAnalyze(company)] --> Calls geminiService.analyzeCompanyWebsite(company)
        |
        v
-[geminiService.ts] -----> Checks for API_KEY. If absent, returns mock data.
+[geminiService.ts] -----> Checks for API_KEY. If absent, throws an Error.
        |                 If present, makes API call to Google Gemini.
        |                          |
        |                          v

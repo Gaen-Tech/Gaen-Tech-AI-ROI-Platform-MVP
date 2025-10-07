@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Lead } from '../types';
 
@@ -88,12 +89,6 @@ export const ProposalForExport: React.FC<Props> = ({ lead, innerRef }) => {
 
       {/* Footer */}
       <footer className="mt-16 pt-6 border-t border-gray-700 text-center text-xs text-gray-500">
-        {lead.isMockData && (
-          <div className="mb-4 text-center font-bold text-yellow-400 text-base p-2 bg-yellow-500/10 rounded-md border border-yellow-500/30">
-            SAMPLE PROPOSAL - DEMO DATA
-          </div>
-        )}
-        {/* Fix: Replaced typo `newgetFullYear` with `new Date().getFullYear()` */}
         <p>&copy; {new Date().getFullYear()} Gaen Technologies | Confidential</p>
       </footer>
     </div>

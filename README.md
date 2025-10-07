@@ -1,3 +1,4 @@
+
 # Gaen Tech - AI ROI Generation Platform
 
 ## Project Overview
@@ -12,12 +13,7 @@ The core mission is to empower sales and business development teams to quickly t
 
 - **Dashboard Overview**: Get a high-level view of your sales pipeline, including the number of opportunities, qualified leads, and total potential ROI visualized by status and industry.
 
-- **Geo-Targeted Company Discovery**:
-    - Analyze companies from a pre-populated, geo-targeted list focusing on the NJ, DE, PA, and NYC areas.
-    - Dynamically refresh the discovery list with a single click.
-    - Analyze any company on-the-fly by simply entering their website URL.
-    - Filter and search through the discovery list to find ideal prospects.
-    - Export the discovery list as a CSV file.
+- **On-Demand Company Discovery**: Analyze any company on-the-fly by simply entering their website URL. This allows for targeted, real-time lead generation.
 
 - **AI-Powered Analysis**:
     - Leverages the Google Gemini API with **Google Search grounding** to ensure analysis is based on real-time, verifiable data.
@@ -32,11 +28,6 @@ The core mission is to empower sales and business development teams to quickly t
     - **Filter leads by both status and minimum estimated ROI** for a granular view of your pipeline.
 
 - **One-Click PDF Proposals**: Instantly generate a professional, client-ready digital transformation proposal based on the AI analysis. The proposal is professionally formatted and includes all key data points and verifiable sources.
-
-- **Trust & Transparency with "Demo Mode"**:
-    - If no API key is provided, the app runs in a fully-featured "Demo Mode".
-    - A clear "Demo Mode" badge is always visible in the header.
-    - All generated analysis is clearly marked as sample data, and exported PDFs are watermarked, ensuring full transparency.
 
 - **Accessibility**: Key interactive elements include ARIA labels to ensure a better user experience for all users.
 
@@ -89,9 +80,9 @@ The core mission is to empower sales and business development teams to quickly t
 
 ### Configuration
 
-The application requires a Google Gemini API key to function with live data. This key should be stored in an environment variable named `API_KEY`.
+The application requires a Google Gemini API key to function. This key must be stored in an environment variable named `API_KEY`.
 
 1.  **Obtain an API Key**: If you don't have one, get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 2.  **Set Environment Variable**: The execution environment where this app is hosted must have the `API_KEY` environment variable set. The application is coded to read `process.env.API_KEY` directly.
 
-**Demo Mode**: If the `API_KEY` environment variable is not set, the application will automatically launch in **Demo Mode**. In this mode, it uses a dynamic mock data generator instead of the live Gemini API, allowing for full functionality for demonstration or development purposes.
+If the `API_KEY` is not set, the application will not be able to perform AI analysis and will display an error message.

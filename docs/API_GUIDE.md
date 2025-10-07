@@ -1,3 +1,4 @@
+
 # Gemini API Integration Guide
 
 This document details how the Gaen Tech platform interacts with the Google Gemini API, which is the core of our analysis engine.
@@ -7,7 +8,7 @@ This document details how the Gaen Tech platform interacts with the Google Gemin
 All communication with the Gemini API is handled within `services/geminiService.ts`. This abstraction provides several benefits:
 - **Separation of Concerns**: UI components are not directly responsible for making API calls.
 - **Centralized Logic**: Prompt engineering, data parsing, validation, and error handling are all located in one place, making it easy to manage and update.
-- **Testability & Development**: The service layer includes a "Demo Mode" fallback, allowing the entire application to be used and tested without a live API key.
+- **Environment Dependency**: The service layer now requires a valid `API_KEY` to function, throwing an error if it is not present.
 
 ## 2. Core Function: `analyzeCompanyWebsite`
 
@@ -40,21 +41,11 @@ The service layer is designed to be resilient to inconsistent API responses.
     - It checks for the presence and correct type of `aiOpportunityScore` and `keyOpportunities`.
     - If `estimatedRoi` is missing, it is **calculated on the fly** by summing the `estimatedImpact` of each opportunity. This prevents data integrity issues and ensures leads are always displayed correctly.
 5.  **Source Extraction**: The grounding sources are extracted from the `groundingMetadata` path. This provides the verifiable data that builds trust in the analysis.
-6.  **Data Tagging**: The final `AnalysisResult` object is tagged with `isMockData: false` to clearly distinguish it from demo data.
 
 ## 5. Error Handling
 
 The `analyzeCompanyWebsite` function has multi-layered error handling:
-
-- **No Content Error**: It first checks if the API response contains any `candidates`. If not, it means the response was likely blocked (e.g., by safety filters), and it throws a specific, user-friendly error.
+- **Configuration Error**: It first checks if the `API_KEY` is available. If not, it throws an error to prevent any API calls.
+- **No Content Error**: It then checks if the API response contains any `candidates`. If not, it means the response was likely blocked (e.g., by safety filters), and it throws a specific, user-friendly error.
 - **Invalid Format Error**: If a JSON object cannot be found or parsed from the response text, it throws an error indicating the AI's response was malformed.
 - **General Errors**: A top-level `try...catch` block handles network errors or other unexpected issues during the API call, relaying the message to the UI.
-
-## 6. Demo Mode Fallback
-
-If the `API_KEY` environment variable is not set, `analyzeCompanyWebsite` does not call the Gemini API. Instead, it calls `generateMockAnalysis()`. This internal function:
-- Simulates an API delay (`setTimeout`).
-- Dynamically creates a realistic `AnalysisResult` object with varied opportunities, scores, and ROI figures that adhere to the business rules.
-- Tags the data with `isMockData: true`.
-
-This ensures a seamless and informative experience for development, testing, and product demonstrations.
