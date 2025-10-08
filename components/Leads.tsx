@@ -49,9 +49,9 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
       }
     });
 
-  const handleExportPDF = async (lead: Lead) => {
+  const handleExportPDF = (lead: Lead) => {
     try {
-      await generateProposal(lead);
+      generateProposal(lead);
     } catch (error) {
       alert('Failed to generate proposal. See console for details.');
       console.error('Failed to generate proposal:', error);
