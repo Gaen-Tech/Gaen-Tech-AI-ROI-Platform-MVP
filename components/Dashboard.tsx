@@ -31,53 +31,11 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 relative overflow-hidden text-gray-100">
+    <div className="relative text-gray-100">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-20 w-64 h-64 border border-cyan-400 rounded-full animate-pulse"></div>
         <div className="absolute bottom-20 right-20 w-96 h-96 border border-purple-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
         <div className="absolute top-1/2 left-1/2 w-72 h-72 border border-pink-400 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-6 py-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/logo.png" 
-              alt="Gaen Technologies" 
-              className="w-12 h-12 rounded-xl shadow-lg shadow-purple-500/50"
-              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                const target = e.currentTarget;
-                target.style.display = 'none';
-                const nextSibling = target.nextElementSibling;
-                if (nextSibling instanceof HTMLElement) {
-                    nextSibling.classList.remove('hidden');
-                }
-              }}
-            />
-            <div className="hidden w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/50">
-              <SparklesIcon className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Gaen Technologies</h1>
-              <p className="text-sm text-cyan-400">Simplify Life</p>
-            </div>
-          </div>
-          
-          <div className="flex gap-4">
-            <button 
-              onClick={() => setView('discovery')}
-              className="px-4 py-2 text-gray-300 hover:text-white transition"
-            >
-              Discovery
-            </button>
-            <button 
-              onClick={() => setView('leads')}
-              className="px-4 py-2 text-white font-semibold bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition"
-            >
-              Leads
-            </button>
-          </div>
-        </div>
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-8">

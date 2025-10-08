@@ -17,7 +17,12 @@ Before you begin, ensure the application is properly configured with a Google Ge
 
 ## 3. Navigating the Platform
 
-The main navigation is on the left-hand **Sidebar**. There are three key sections:
+The platform features a modern, responsive navigation system.
+
+- **On Desktop**: A fixed **Sidebar** on the left provides constant access to the main views.
+- **On Mobile**: A clean header with a "hamburger" menu icon toggles a slide-in navigation overlay.
+
+There are three key sections:
 
 - **Dashboard**: Your mission control center for a high-level overview.
 - **Discovery**: Where you find and analyze new companies.
@@ -34,8 +39,8 @@ This is the core workflow you will follow to generate and manage leads.
 Navigate to the **Discovery** page.
 
 1. Find a company you're interested in.
-2. In the "Analyze New Company by URL" section, type or paste their website URL (e.g., `innovatesolutions.com`).
-3. Click the **"Analyze URL"** button.
+2. In the input field, type or paste their website URL (e.g., `innovatesolutions.com`).
+3. Click the **"Start AI Analysis"** button.
 4. The AI will now analyze the website in real-time. This may take 15-30 seconds. You will see a loading indicator.
 
 Once the analysis is complete, you will be automatically redirected to the **Leads** page, where your newly analyzed company will appear at the top of the list.
@@ -44,32 +49,31 @@ Once the analysis is complete, you will be automatically redirected to the **Lea
 
 Navigate to the **Leads** page. This is your pipeline.
 
-**A) Filtering Your Leads:**
-- At the top right, you will find two filters that work together:
-    - **Status**: Filter by the lead's current stage (e.g., show only "Qualified" leads).
-    - **Minimum ROI**: Filter by the lead's financial potential (e.g., show leads worth over "$100k+").
+**A) Filtering and Sorting Your Leads:**
+- Use the controls at the top of the page to organize your leads:
+    - **Search**: Find a specific lead by company name or website.
+    - **Filter by Status**: Show all leads, or only "Prospected" or "Qualified" ones.
+    - **Sort**: Order your leads by the latest date, highest opportunity score, or highest ROI.
 - Use these to focus on your highest-priority leads.
 
 **B) Viewing Lead Details:**
-1. For any lead in the list, click the **"View"** button.
+1. For any lead in the list, click the **"Details"** button.
 2. A modal window will pop up, showing you a detailed breakdown of the AI analysis:
-    - **AI Opportunity Score**: A quick measure of the lead's potential. Higher is better.
-    - **Est. Total Annual ROI**: The total potential financial gain for the client.
+    - **Opportunity Score**: A quick measure of the lead's potential. Higher is better.
+    - **Est. Annual ROI**: The total potential financial gain for the client.
     - **Key Opportunities**: Specific problems the company likely faces and how Gaen Tech's AI solutions can solve them.
     - **Analysis Sources**: A list of clickable links to the web pages the AI used for its analysis. **Use these to verify the data and build your own understanding before a client call.**
 
 **C) Updating Lead Status:**
-- In the "Status" column for each lead, you can use the dropdown menu to update their stage in the sales funnel:
+- On each lead card, you can use the status dropdown menu to update their stage in the sales funnel:
     - **Prospected**: The default status for a new lead.
-    - **Contacted**: You have reached out to the lead.
     - **Qualified**: You have confirmed they are a good fit.
-    - **Closed**: The deal is won or lost.
 
 ### Step 3: Export a Professional Proposal
 
 The final step is to generate a client-ready document.
 
-1.  From the **Lead Detail Modal** (see Step 2B), click the **"Export as PDF"** button.
+1.  On any lead card, click the **"Export PDF"** button.
 2.  A professionally formatted PDF proposal will be generated and downloaded to your computer.
 3.  This document contains all the key information from the analysis and is ready to be sent to the prospective client to start the conversation.
 
@@ -79,8 +83,8 @@ The final step is to generate a client-ready document.
 
 The **Dashboard** gives you a real-time overview of your efforts.
 
-- **Stat Cards**: At the top, you'll see key metrics: Total Opportunities analyzed, number of Qualified Leads, and the Total Potential ROI across all your leads.
-- **Leads by Status**: This pie chart shows you the distribution of your leads across the sales funnel.
-- **Potential ROI by Industry**: This bar chart shows which industries hold the most financial potential, helping you focus your efforts.
+- **Stat Cards**: At the top, you'll see key metrics: Total Leads Analyzed, number of Qualified Leads, the Total Potential ROI in your pipeline, and the average Opportunity Score.
+- **Recent Discoveries**: A quick-view list of the most recently analyzed companies.
+- **Value Proposition Cards**: Reminders of the key benefits the platform provides.
 
 This data helps you track your progress and identify trends in your lead generation activities.

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import Dashboard from './components/Dashboard';
 import { Discovery } from './components/Discovery';
 import Leads from './components/Leads';
+import { Navigation } from './components/Sidebar';
 import { View, Lead, Company, AnalysisResult, LeadStatus } from './types';
 
 const App: React.FC = () => {
@@ -17,15 +18,19 @@ const App: React.FC = () => {
       createdAt: new Date().toISOString(),
     };
     
+    let leadExists = false;
     setLeads(prevLeads => {
       if(prevLeads.some(l => l.company.website === newLead.company.website)) {
-        alert("A lead for this website already exists.");
+        console.warn("A lead for this website already exists.");
+        leadExists = true;
         return prevLeads;
       };
       return [newLead, ...prevLeads];
     });
    
-    setView('leads');
+    if (!leadExists) {
+      setView('leads');
+    }
   }, []);
 
   const updateLead = useCallback((leadId: string, updates: Partial<Lead>) => {
@@ -50,8 +55,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-900 text-gray-100 font-sans">
-      {renderView()}
+    <div className="relative min-h-screen md:flex bg-slate-900 text-gray-100 font-sans">
+      <Navigation currentView={view} setView={setView} />
+      <main className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 overflow-y-auto">
+              {renderView()}
+          </div>
+      </main>
     </div>
   );
 };

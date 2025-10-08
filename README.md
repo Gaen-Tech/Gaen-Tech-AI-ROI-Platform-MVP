@@ -11,7 +11,7 @@ The core mission is to empower sales and business development teams to quickly t
 
 ## Key Features
 
-- **Dashboard Overview**: Get a high-level view of your sales pipeline, including the number of opportunities, qualified leads, and total potential ROI visualized by status and industry.
+- **Dashboard Overview**: Get a high-level view of your sales pipeline, including the number of opportunities, qualified leads, and total potential ROI.
 
 - **On-Demand Company Discovery**: Analyze any company on-the-fly by simply entering their website URL. This allows for targeted, real-time lead generation.
 
@@ -23,11 +23,13 @@ The core mission is to empower sales and business development teams to quickly t
 
 - **Lead Management**:
     - Automatically converts every analyzed company into a lead.
-    - View detailed breakdowns of the AI analysis for each lead.
-    - Update lead status through a simple sales funnel (`Prospected`, `Contacted`, `Qualified`, `Closed`).
-    - **Filter leads by both status and minimum estimated ROI** for a granular view of your pipeline.
+    - View detailed breakdowns of the AI analysis for each lead in a modal view.
+    - Update lead status through a simple sales funnel (`Prospected`, `Qualified`).
+    - Filter and sort leads by creation date, opportunity score, or estimated ROI.
 
 - **One-Click PDF Proposals**: Instantly generate a professional, client-ready digital transformation proposal based on the AI analysis. The proposal is professionally formatted and includes all key data points and verifiable sources.
+
+- **Responsive Design**: A modern, fully responsive interface with a fixed sidebar on desktop and a slide-in menu on mobile.
 
 - **Accessibility**: Key interactive elements include ARIA labels to ensure a better user experience for all users.
 
@@ -38,8 +40,7 @@ The core mission is to empower sales and business development teams to quickly t
 - **Frontend**: React, TypeScript
 - **Styling**: Tailwind CSS
 - **AI/ML**: Google Gemini API (`gemini-2.5-flash`)
-- **Charts**: Recharts
-- **PDF Generation**: jsPDF, html2canvas
+- **PDF Generation**: jsPDF
 
 ---
 
@@ -51,16 +52,16 @@ The core mission is to empower sales and business development teams to quickly t
 │   ├── icons/          # SVG icon components
 │   ├── Dashboard.tsx
 │   ├── Discovery.tsx
-│   ├── Header.tsx
 │   ├── Leads.tsx
+│   ├── LeadDetailModal.tsx
 │   ├── ProposalForExport.tsx
-│   └── Sidebar.tsx
+│   └── Sidebar.tsx      # Handles responsive navigation (Sidebar/Mobile Menu)
 ├── docs/               # Project documentation
 │   ├── ARCHITECTURE.md
 │   ├── API_GUIDE.md
 │   └── USER_GUIDE.md
 ├── hooks/              # Custom React hooks (e.g., useMockCompanies.ts)
-├── services/           # API interaction layer (e.g., geminiService.ts)
+├── services/           # API interaction layer (e.g., geminiService.ts, proposalService.ts)
 ├── types.ts            # Core TypeScript type definitions
 ├── App.tsx             # Main application component
 ├── index.html          # HTML entry point
