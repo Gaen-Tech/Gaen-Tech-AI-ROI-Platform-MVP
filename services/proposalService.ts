@@ -9,7 +9,7 @@ const generatePdfFromElement = async (element: HTMLElement, lead: Lead): Promise
     try {
         const canvas = await html2canvas(element, {
             scale: 2,
-            backgroundColor: '#1F2937', // bg-gray-800
+            backgroundColor: '#0F172A', // bg-slate-900
             useCORS: true,
         });
         

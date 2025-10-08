@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   SparklesIcon, 
@@ -15,6 +16,7 @@ import {
 } from './icons/Icon';
 import type { Lead, View, LeadStatus } from '../types';
 import { generateProposal } from '../services/proposalService';
+import LeadDetailModal from './LeadDetailModal';
 
 interface LeadsProps {
   leads: Lead[];
@@ -26,6 +28,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'prospected' | 'qualified'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'score' | 'roi'>('date');
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const filteredLeads = leads
     .filter(lead => {
@@ -57,6 +60,14 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
 
   const handleStatusChange = (leadId: string, newStatus: LeadStatus) => {
     onUpdateLead(leadId, { status: newStatus });
+  };
+
+  const handleViewDetails = (lead: Lead) => {
+    setSelectedLead(lead);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedLead(null);
   };
 
   const totalROI = filteredLeads.reduce((sum, lead) => 
@@ -176,7 +187,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
                 {lead.analysis.keyOpportunities.length > 0 && (<div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700"><p className="text-xs text-gray-400 mb-1">Top Opportunity:</p><p className="text-sm text-white font-semibold line-clamp-2">{lead.analysis.keyOpportunities[0].opportunity}</p></div>)}
                 <div className="flex gap-2">
                   <button onClick={() => handleExportPDF(lead)} className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition flex items-center justify-center gap-2"><DownloadIcon className="w-4 h-4" />Export PDF</button>
-                  <button className="px-4 py-2 bg-slate-700/50 text-gray-300 font-semibold rounded-lg hover:bg-slate-700 transition flex items-center justify-center gap-2" onClick={() => alert('Lead detail view coming soon!')}><FileTextIcon className="w-4 h-4" />Details</button>
+                  <button className="px-4 py-2 bg-slate-700/50 text-gray-300 font-semibold rounded-lg hover:bg-slate-700 transition flex items-center justify-center gap-2" onClick={() => handleViewDetails(lead)}><FileTextIcon className="w-4 h-4" />Details</button>
                 </div>
               </div>
             ))}
@@ -187,6 +198,8 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
       <div className="relative z-10 text-center py-8 mt-8">
         <p className="text-gray-500 text-sm">#FutureIsSimple • www.gaentechnologies.com</p>
       </div>
+
+      <LeadDetailModal lead={selectedLead} onClose={handleCloseModal} />
     </div>
   );
 };
