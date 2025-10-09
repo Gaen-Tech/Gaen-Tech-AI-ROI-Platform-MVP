@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { SearchIcon, SparklesIcon, TrendingUpIcon, TargetIcon, ChevronRightIcon, AlertCircleIcon, LoadingSpinner } from './icons/Icon';
+import React, { useState, useRef, useEffect } from 'react';
+import { SearchIcon, SparklesIcon, TrendingUpIcon, TargetIcon, ChevronRightIcon, AlertCircleIcon, LoadingSpinner, RefreshCwIcon } from './icons/Icon';
 import { analyzeCompanyWebsite } from '../services/geminiService';
 import type { View, Company, AnalysisResult, Industry, UserProfile } from '../types';
 
@@ -14,6 +14,18 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const progressIntervalRef = useRef<number | null>(null);
+
+  const stopProgress = () => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => stopProgress();
+  }, []);
 
   const handleAnalyze = async () => {
     if (!url || isAnalyzing) return;
@@ -22,10 +34,11 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
     setError(null);
     setProgress(0);
 
-    const progressInterval = setInterval(() => {
+    stopProgress();
+    progressIntervalRef.current = window.setInterval(() => {
       setProgress(prev => {
         if (prev >= 90) {
-          clearInterval(progressInterval);
+          stopProgress();
           return 90;
         }
         return prev + 10;
@@ -47,14 +60,14 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
         };
         const analysisResult = await analyzeCompanyWebsite(tempCompany, userProfile);
         
-        clearInterval(progressInterval);
+        stopProgress();
         setProgress(100);
       
         setTimeout(() => {
           onAnalyzeComplete(tempCompany, analysisResult);
         }, 500);
     } catch (err) {
-        clearInterval(progressInterval);
+        stopProgress();
         setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
         setProgress(0);
         setIsAnalyzing(false);
@@ -121,7 +134,7 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
                 />
               </div>
 
-              {error && (
+              {error && !isAnalyzing && (
                 <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400">
                   <AlertCircleIcon className="w-5 h-5 flex-shrink-0" />
                   <p className="text-sm">{error}</p>
@@ -131,13 +144,22 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
               <button
                 onClick={handleAnalyze}
                 disabled={!url || isAnalyzing}
-                className="w-full py-4 bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+                className={`w-full py-4 text-white font-bold rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                  error && !isAnalyzing
+                    ? 'bg-orange-600 hover:bg-orange-700'
+                    : 'bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 hover:shadow-purple-500/50'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isAnalyzing ? (
                   <>
                     <LoadingSpinner className="w-5 h-5" />
                     Analyzing... {progress}%
                   </>
+                ) : error ? (
+                   <>
+                    <RefreshCwIcon className="w-5 h-5" />
+                    Try Again
+                   </>
                 ) : (
                   <>
                     <SparklesIcon className="w-5 h-5" />
