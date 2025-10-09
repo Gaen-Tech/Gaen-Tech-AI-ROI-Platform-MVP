@@ -59,6 +59,9 @@ export const analyzeCompanyWebsite = async (
       tools: [{ googleSearch: {} }],
     };
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60-second timeout
+
     // Call your own backend proxy
     const proxyResponse = await fetch('/api/gemini-proxy.php', {
       method: 'POST',
@@ -66,7 +69,10 @@ export const analyzeCompanyWebsite = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestPayload),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!proxyResponse.ok) {
         const errorData = await proxyResponse.json().catch(() => {
@@ -142,6 +148,9 @@ export const analyzeCompanyWebsite = async (
 
   } catch (error) {
     console.error("❌ Error analyzing company website:", error);
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('Analysis timed out after 60 seconds. The website might be slow or protected.');
+    }
     if (error instanceof SyntaxError) {
       throw new Error("Failed to parse AI analysis. The model returned malformed JSON. Please try again.");
     }

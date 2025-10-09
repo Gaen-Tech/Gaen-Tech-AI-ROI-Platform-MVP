@@ -46,17 +46,18 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
             contact: `info@${hostname}`
         };
         const analysisResult = await analyzeCompanyWebsite(tempCompany, userProfile);
+        
+        clearInterval(progressInterval);
         setProgress(100);
       
-      setTimeout(() => {
-        onAnalyzeComplete(tempCompany, analysisResult);
-      }, 500);
+        setTimeout(() => {
+          onAnalyzeComplete(tempCompany, analysisResult);
+        }, 500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
-      setProgress(0);
-    } finally {
-      clearInterval(progressInterval);
-      setIsAnalyzing(false);
+        clearInterval(progressInterval);
+        setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
+        setProgress(0);
+        setIsAnalyzing(false);
     }
   };
 
