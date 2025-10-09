@@ -29,7 +29,7 @@ The codebase is organized into logical directories to maintain separation of con
 For the MVP, we have adopted a localized state management approach using **React Hooks** (`useState`, `useCallback`, `useMemo`, `useEffect`).
 
 - **Why this approach?**: It avoids the overhead and complexity of a global state management library (like Redux or Zustand) which is not necessary for the current scale of the application.
-- **State Location**: The primary application state (the list of `leads`) is lifted up to the main `App.tsx` component.
+- **State Location**: The primary application state (the list of `leads` and the `userProfile`) is lifted up to the main `App.tsx` component.
 - **Data Flow**: State and state-updating functions are passed down to child components as props. This follows a unidirectional data flow, making the application easier to reason about and debug.
 
 ## 5. Architectural Patterns
@@ -38,7 +38,7 @@ For the MVP, we have adopted a localized state management approach using **React
 
 The service layer is designed to be highly resilient. Instead of just making an API call, it's responsible for:
 - **Error Handling**: Throwing a clear error if the required `API_KEY` is not configured.
-- **Prompt Engineering**: Crafting precise instructions for the AI model.
+- **Prompt Engineering**: Crafting precise, dynamic instructions for the AI model, injecting the user-defined sales persona to tailor the analysis.
 - **Resilient Parsing**: Intelligently extracting a valid JSON object from the AI's response, even if it contains extraneous text.
 - **Response Validation**: Proactively checking if the AI's response is empty or blocked by safety filters, providing clear errors to the user.
 - **Data Integrity**: Validating the structure of the AI's response and providing fallbacks for critical missing data (e.g., calculating `estimatedAnnualROI` if it's not provided).
@@ -54,11 +54,11 @@ This diagram illustrates the primary workflow of analyzing a company and generat
 [Click "Analyze Company"]
        |
        v
-[handleAnalyze(company)] --> Calls geminiService.analyzeCompanyWebsite(company)
+[handleAnalyze(company)] --> Calls geminiService.analyzeCompanyWebsite(company, userProfile)
        |
        v
-[geminiService.ts] -----> Checks for API_KEY. If absent, throws an Error.
-       |                 If present, makes API call to Google Gemini.
+[geminiService.ts] -----> Injects userProfile into the prompt. Checks for API_KEY.
+       |                 If present, makes API call to Google Gemini via proxy.
        |                          |
        |                          v
        |                      [Google Cloud]

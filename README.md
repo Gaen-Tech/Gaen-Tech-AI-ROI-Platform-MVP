@@ -13,6 +13,8 @@ The core mission is to empower sales and business development teams to quickly t
 
 - **Dashboard Overview**: Get a high-level view of your sales pipeline, including the number of opportunities, qualified leads, and total potential ROI.
 
+- **Configurable Sales Persona**: Tailor the AI's analysis to your specific business. Define your company name and product offerings on the dashboard to generate hyper-personalized reports for any industry, from tech solutions to high-end dental equipment.
+
 - **On-Demand Company Discovery**: Analyze any company on-the-fly by simply entering their website URL. This allows for targeted, real-time lead generation.
 
 - **AI-Powered Analysis**:

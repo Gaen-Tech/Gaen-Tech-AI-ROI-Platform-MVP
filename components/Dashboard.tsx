@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     SparklesIcon,
     TrendingUpIcon,
@@ -9,7 +9,8 @@ import {
     ClockIcon,
     ChevronRightIcon,
     LightbulbIcon,
-    ZapIcon
+    ZapIcon,
+    CheckCircleIcon
 } from './icons/Icon';
 import type { Lead, View, UserProfile } from '../types';
 
@@ -21,6 +22,9 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setUserProfile }) => {
+  const [localProfile, setLocalProfile] = useState<UserProfile>(userProfile);
+  const [isSaved, setIsSaved] = useState(false);
+
   const totalLeads = leads.length;
   const qualifiedLeads = leads.filter(lead => lead.status === 'qualified').length;
   const totalROI = leads.reduce((sum, lead) => sum + (lead.analysis.totals.estimatedAnnualROI || 0), 0);
@@ -31,6 +35,21 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setU
   const recentLeads = [...leads]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
+
+  const isProfileChanged = userProfile.companyName !== localProfile.companyName || userProfile.productDescription !== localProfile.productDescription;
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setLocalProfile(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    if (isSaved) {
+        setIsSaved(false);
+    }
+  };
+
+  const handleSaveProfile = () => {
+    setUserProfile(localProfile);
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2000);
+  };
 
   return (
     <div className="relative text-gray-100">
@@ -137,8 +156,9 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setU
                           <input
                             type="text"
                             id="companyName"
-                            value={userProfile.companyName}
-                            onChange={(e) => setUserProfile({ ...userProfile, companyName: e.target.value })}
+                            name="companyName"
+                            value={localProfile.companyName}
+                            onChange={handleProfileChange}
                             className="w-full px-3 py-2 bg-slate-900/80 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
                           />
                         </div>
@@ -146,13 +166,31 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setU
                           <label htmlFor="productDescription" className="block text-sm font-medium text-gray-400 mb-1">Your Products/Services</label>
                           <textarea
                             id="productDescription"
+                            name="productDescription"
                             rows={3}
-                            value={userProfile.productDescription}
-                            onChange={(e) => setUserProfile({ ...userProfile, productDescription: e.target.value })}
+                            value={localProfile.productDescription}
+                            onChange={handleProfileChange}
                             className="w-full px-3 py-2 bg-slate-900/80 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             placeholder="e.g., high-end dental imaging equipment and practice management software"
                           />
                         </div>
+                        <button
+                          onClick={handleSaveProfile}
+                          disabled={!isProfileChanged || isSaved}
+                          className={`w-full mt-2 px-4 py-2 font-semibold rounded-lg transition flex items-center justify-center gap-2 ${
+                            isSaved
+                              ? 'bg-green-600 text-white cursor-not-allowed'
+                              : isProfileChanged
+                              ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                              : 'bg-slate-700 text-gray-500 cursor-not-allowed'
+                          }`}
+                        >
+                          {isSaved ? (
+                              <><CheckCircleIcon className="w-5 h-5" /> Persona Saved!</>
+                          ) : (
+                              'Update Persona'
+                          )}
+                        </button>
                       </div>
                     </div>
                     <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-cyan-500/50 transition">

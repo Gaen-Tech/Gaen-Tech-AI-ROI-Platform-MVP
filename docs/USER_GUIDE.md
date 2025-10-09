@@ -13,7 +13,7 @@ This platform is your AI-powered assistant for business development. It helps yo
 
 ## 2. Platform Setup
 
-Before you begin, ensure the application is properly configured with a Google Gemini API key. Without a valid API key set as an environment variable, the AI analysis features will not work, and you will see an error message.
+Before you begin, ensure the application is properly configured with a Google Gemini API key. Without a valid API key set as an environment variable on the server, the AI analysis features will not work, and you will see an error message.
 
 ## 3. Navigating the Platform
 
@@ -30,7 +30,23 @@ There are three key sections:
 
 ---
 
-## 4. The Workflow: From Discovery to Proposal
+## 4. Configuring Your Sales Persona (Crucial!)
+
+Before you start analyzing companies, it's essential to tell the AI who you are. This platform is versatile and can be adapted for any industry.
+
+1.  Navigate to the **Dashboard**.
+2.  Find the **"Your Sales Persona"** card.
+3.  **Your Company Name**: Enter the name of your company. The AI will use this in its reports.
+4.  **Your Products/Services**: Describe what you sell. Be concise but clear. For example:
+    -   `"provides high-end dental imaging equipment and practice management software"`
+    -   `"specializes in custom web design and SEO services for small businesses"`
+    -   `"delivers digital transformation and simplifies business through AI"` (the default)
+
+The AI will use this information to act as a consultant for *your* business, looking for opportunities specifically related to what *you* sell. **Updating this persona is the key to generating hyper-personalized, relevant reports for your specific sales goals.**
+
+---
+
+## 5. The Workflow: From Discovery to Proposal
 
 This is the core workflow you will follow to generate and manage leads.
 
@@ -79,11 +95,12 @@ The final step is to generate a client-ready document.
 
 ---
 
-## 5. Understanding the Dashboard
+## 6. Understanding the Dashboard
 
 The **Dashboard** gives you a real-time overview of your efforts.
 
 - **Stat Cards**: At the top, you'll see key metrics: Total Leads Analyzed, number of Qualified Leads, the Total Potential ROI in your pipeline, and the average Opportunity Score.
+- **Your Sales Persona**: The configuration card to tailor the AI's analysis (see section 4).
 - **Recent Discoveries**: A quick-view list of the most recently analyzed companies.
 - **Value Proposition Cards**: Reminders of the key benefits the platform provides.
 

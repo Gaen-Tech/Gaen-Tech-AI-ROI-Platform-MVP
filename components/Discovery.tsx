@@ -55,9 +55,10 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
       clearInterval(progressInterval);
       setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
       setProgress(0);
+      setIsAnalyzing(false); // Fix: Reset analysis state on error
     } finally {
       clearInterval(progressInterval);
-      // Keep isAnalyzing true until navigation happens via callback
+      // Keep isAnalyzing true on success, as navigation will unmount the component
     }
   };
 
