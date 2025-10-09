@@ -11,14 +11,16 @@ import {
     LightbulbIcon,
     ZapIcon
 } from './icons/Icon';
-import type { Lead, View } from '../types';
+import type { Lead, View, UserProfile } from '../types';
 
 interface DashboardProps {
   leads: Lead[];
   setView: (view: View) => void;
+  userProfile: UserProfile;
+  setUserProfile: (profile: UserProfile) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
+const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setUserProfile }) => {
   const totalLeads = leads.length;
   const qualifiedLeads = leads.filter(lead => lead.status === 'qualified').length;
   const totalROI = leads.reduce((sum, lead) => sum + (lead.analysis.totals.estimatedAnnualROI || 0), 0);
@@ -127,6 +129,32 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
                     </div>
                 </div>
                 <div className="space-y-6">
+                    <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6">
+                      <h3 className="text-xl font-bold text-white mb-4">Your Sales Persona</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor="companyName" className="block text-sm font-medium text-gray-400 mb-1">Your Company Name</label>
+                          <input
+                            type="text"
+                            id="companyName"
+                            value={userProfile.companyName}
+                            onChange={(e) => setUserProfile({ ...userProfile, companyName: e.target.value })}
+                            className="w-full px-3 py-2 bg-slate-900/80 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="productDescription" className="block text-sm font-medium text-gray-400 mb-1">Your Products/Services</label>
+                          <textarea
+                            id="productDescription"
+                            rows={3}
+                            value={userProfile.productDescription}
+                            onChange={(e) => setUserProfile({ ...userProfile, productDescription: e.target.value })}
+                            className="w-full px-3 py-2 bg-slate-900/80 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="e.g., high-end dental imaging equipment and practice management software"
+                          />
+                        </div>
+                      </div>
+                    </div>
                     <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-cyan-500/50 transition">
                         <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-4"><ZapIcon className="w-6 h-6 text-cyan-400" /></div>
                         <h4 className="text-white font-bold mb-2">60x Faster</h4><p className="text-gray-400 text-sm">Reduce research from hours to under a minute</p>
@@ -134,10 +162,6 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
                     <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-purple-500/50 transition">
                         <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-4"><TargetIcon className="w-6 h-6 text-purple-400" /></div>
                         <h4 className="text-white font-bold mb-2">Data-Driven</h4><p className="text-gray-400 text-sm">Source-linked proposals based on Google Search data</p>
-                    </div>
-                    <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-pink-500/50 transition">
-                        <div className="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center mb-4"><TrendingUpIcon className="w-6 h-6 text-pink-400" /></div>
-                        <h4 className="text-white font-bold mb-2">5-10x ROI</h4><p className="text-gray-400 text-sm">One user can do the work of an entire team</p>
                     </div>
                 </div>
             </div>

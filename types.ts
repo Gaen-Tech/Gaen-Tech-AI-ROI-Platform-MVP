@@ -53,3 +53,8 @@ export interface Lead {
   status: LeadStatus;
   createdAt: string;
 }
+
+export interface UserProfile {
+  companyName: string;
+  productDescription: string;
+}
