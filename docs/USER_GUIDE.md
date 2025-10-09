@@ -41,6 +41,7 @@ Before you start analyzing companies, it's essential to tell the AI who you are.
     -   `"provides high-end dental imaging equipment and practice management software"`
     -   `"specializes in custom web design and SEO services for small businesses"`
     -   `"delivers digital transformation and simplifies business through AI"` (the default)
+5.  **Click the "Update Persona" button to save your changes.** The button will confirm when the persona is saved. The AI will use this new information for all future analyses.
 
 The AI will use this information to act as a consultant for *your* business, looking for opportunities specifically related to what *you* sell. **Updating this persona is the key to generating hyper-personalized, relevant reports for your specific sales goals.**
 

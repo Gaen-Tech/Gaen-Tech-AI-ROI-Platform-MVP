@@ -69,7 +69,10 @@ export const analyzeCompanyWebsite = async (
     });
 
     if (!proxyResponse.ok) {
-        const errorData = await proxyResponse.json();
+        const errorData = await proxyResponse.json().catch(() => {
+            // Return a default error object if parsing fails (e.g., HTML error page)
+            return { error: { message: `Server returned status ${proxyResponse.status}. Please check if the URL is correct and publicly accessible.` } };
+        });
         throw new Error(`Analysis failed: ${errorData.error?.message || 'Server error from proxy.'}`);
     }
     

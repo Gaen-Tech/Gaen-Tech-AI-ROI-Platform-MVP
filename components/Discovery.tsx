@@ -16,7 +16,7 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
   const [progress, setProgress] = useState(0);
 
   const handleAnalyze = async () => {
-    if (!url) return;
+    if (!url || isAnalyzing) return;
 
     setIsAnalyzing(true);
     setError(null);
@@ -52,13 +52,11 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
         onAnalyzeComplete(tempCompany, analysisResult);
       }, 500);
     } catch (err) {
-      clearInterval(progressInterval);
       setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
       setProgress(0);
-      setIsAnalyzing(false); // Fix: Reset analysis state on error
     } finally {
       clearInterval(progressInterval);
-      // Keep isAnalyzing true on success, as navigation will unmount the component
+      setIsAnalyzing(false);
     }
   };
 
