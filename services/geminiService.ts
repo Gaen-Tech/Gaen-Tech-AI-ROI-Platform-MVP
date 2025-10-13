@@ -52,6 +52,12 @@ export const analyzeCompanyWebsite = async (
     let jsonText = responseText.trim();
     console.log("📄 Raw AI Response (first 500 chars):", jsonText.substring(0, 500));
     
+    // Improved JSON extraction: Handle markdown code blocks
+    const markdownMatch = jsonText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+    if (markdownMatch && markdownMatch[1]) {
+        jsonText = markdownMatch[1];
+    }
+    
     const jsonStartIndex = jsonText.indexOf('{');
     const jsonEndIndex = jsonText.lastIndexOf('}');
 

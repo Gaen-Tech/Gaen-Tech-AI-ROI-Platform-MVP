@@ -1,292 +1,170 @@
-export interface OpportunityTemplate {
-  id: string;
-  title: string;
-  problemTemplate: string;
-  solutionTemplate: string;
-  estimatedImpactRange: {
-    min: number;
-    max: number;
-  };
-  timelineMonths: {
-    min: number;
-    max: number;
-  };
-  applicableWhen: string[]; // conditions when this opportunity applies
-}
+import { IndustryConfig } from '../types';
 
-export interface ScoringCriteria {
-  highPriorityIndicators: Array<{
-    keyword: string;
-    points: number;
-  }>;
-  mediumPriorityIndicators: Array<{
-    keyword: string;
-    points: number;
-  }>;
-  referralIndicators: Array<{
-    keyword: string;
-    points: number;
-  }>;
-  disqualifiers: string[]; // auto-reject if found
-}
-
-export interface IndustryConfig {
-  id: string;
-  name: string;
-  description: string;
-  clientName?: string; // e.g., "Millennium Dental Technologies"
-  productFocus?: string; // e.g., "PerioLase MVP-7"
-  
-  targetCompanyTypes: string[];
-  excludedCompanyTypes: string[];
-  
-  searchQueryTemplates: {
-    companyType: string[];
-    technology: string[];
-    services: string[];
-    referrals: string[];
-  };
-  
-  systemPrompt: string; // Main analysis instructions for Gemini
-  referralAnalysisPrompt?: string; // Optional referral-specific analysis
-  
-  scoringCriteria: ScoringCriteria;
-  opportunityTemplates: OpportunityTemplate[];
-  
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Default configuration (existing behavior)
+// 1. General Business Analysis (the new default)
 export const DEFAULT_CONFIG: IndustryConfig = {
-  id: 'default',
-  name: 'General B2B Analysis',
-  description: 'Standard AI opportunity analysis for any business',
-  
-  targetCompanyTypes: [],
-  excludedCompanyTypes: [],
-  
-  searchQueryTemplates: {
-    companyType: ['"{companyName}" services OR products'],
-    technology: ['"{companyName}" technology OR "tech stack"'],
-    services: ['"{companyName}" offerings OR solutions'],
-    referrals: []
-  },
-  
-  systemPrompt: `
-You are analyzing a company for AI-driven digital transformation opportunities.
+    id: 'default',
+    name: 'General Business Analysis',
+    description: 'A general-purpose persona that analyzes companies for common business challenges like operational inefficiencies, marketing gaps, or sales process improvements.',
+    enabled: true,
+    systemPrompt: `
+    You are an expert senior business analyst. Your task is to analyze a company's website to identify 2-3 high-impact business opportunities. Focus on common business challenges, not just technology. Ground your analysis in real-time data using Google Search.
 
-Analyze the company's digital presence and identify 2-3 high-impact opportunities 
-where AI solutions could deliver measurable ROI.
+    CRITICAL: Your entire response must be a single, valid JSON object, starting with '{' and ending with '}'. Do not include any text, explanation, or markdown formatting before or after the JSON object.
 
-Provide analysis in this JSON structure:
-{
-  "opportunityScore": 0-100,
-  "estimatedAnnualROI": "$XXX,XXX",
-  "opportunities": [
+    Analyze the company: {companyName} ({websiteUrl}).
+
+    Respond with the following JSON structure:
     {
-      "title": "string",
-      "problem": "string", 
-      "solution": "string",
-      "estimatedImpact": "string",
-      "timeline": "string"
+      "opportunityScore": <number, 0-100, assessing overall potential>,
+      "estimatedAnnualROI": "<string, e.g., '$XXX,XXX'>",
+      "opportunities": [
+        {
+          "title": "<string, concise title of the opportunity>",
+          "problem": "<string, the specific business problem this opportunity solves>",
+          "solution": "<string, a strategic, high-level solution>",
+          "estimatedImpact": "<string, estimated annual financial impact, e.g., '$XXX,XXX'>",
+          "timeline": "<string, e.g., '3-6 months'>"
+        }
+      ],
+      "keyInsights": [
+        "<string, a key insight about the company's market, strategy, or operations>"
+      ]
     }
-  ],
-  "keyInsights": ["string"],
-  "sources": ["url"]
-}
-  `.trim(),
-  
-  scoringCriteria: {
-    highPriorityIndicators: [
-      { keyword: 'digital transformation', points: 15 },
-      { keyword: 'technology', points: 10 }
-    ],
-    mediumPriorityIndicators: [
-      { keyword: 'innovation', points: 5 },
-      { keyword: 'growth', points: 5 }
-    ],
-    referralIndicators: [],
-    disqualifiers: []
-  },
-  
-  opportunityTemplates: [],
-  enabled: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
+    `,
+    opportunityTemplates: [],
+    scoringCriteria: {
+        highPriorityIndicators: [{ keyword: 'outdated', points: 10 }, { keyword: 'manual process', points: 15 }],
+        mediumPriorityIndicators: [{ keyword: 'customer engagement', points: 5 }],
+        referralIndicators: [],
+        disqualifiers: ['non-profit', 'government']
+    }
 };
 
-// Millennium Dental Technologies Configuration
-export const MILLENNIUM_DENTAL_CONFIG: IndustryConfig = {
-  id: 'millennium-dental',
-  name: 'Millennium Dental Technologies',
-  description: 'PerioLase MVP-7 laser system for dental practices',
-  clientName: 'Millennium Dental Technologies, Inc.',
-  productFocus: 'PerioLase® MVP-7™ Laser System',
-  
-  targetCompanyTypes: [
-    'periodontics',
-    'periodontist',
-    'periodontal practice',
-    'general dentistry',
-    'general dental practice',
-    'family dentistry',
-    'prosthodontics',
-    'prosthodontist',
-    'oral surgery',
-    'oral surgeon',
-    'dental implants',
-    'implant dentistry'
-  ],
-  
-  excludedCompanyTypes: [
-    'endodontics',
-    'endodontist',
-    'root canal specialist',
-    'orthodontics',
-    'orthodontist',
-    'pediatric dentistry',
-    'pediatric dentist'
-  ],
-  
-  searchQueryTemplates: {
-    companyType: [
-      '"{companyName}" periodontist OR "periodontal services"',
-      '"{companyName}" "dental implants" OR prosthodontist',
-      '"{companyName}" "oral surgery" OR "oral surgeon"',
-      '"{companyName}" "gum disease treatment"',
-      '"{companyName}" services procedures -endodontic'
-    ],
-    technology: [
-      '"{companyName}" "laser dentistry" OR "advanced technology"',
-      '"{companyName}" "minimally invasive" OR "patient comfort"',
-      '"{companyName}" "periodontal surgery" OR "gum surgery"'
-    ],
-    services: [
-      '"{companyName}" "periodontal treatment"',
-      '"{companyName}" "dental implants"',
-      '"{companyName}" "gum grafting" OR "bone grafting"'
-    ],
-    referrals: [
-      '"{companyName}" "accepting referrals" OR "referring dentists"',
-      '"{companyName}" "specialist" OR "specialty practice"',
-      '"{companyName}" "referral network"'
-    ]
-  },
-  
-  systemPrompt: `
-You are analyzing dental practices for their potential to adopt the PerioLase MVP-7 laser 
-and LANAP protocol from Millennium Dental Technologies.
+// 2. AI Digital Transformation Analysis (the cloned persona)
+const AI_TRANSFORMATION_CONFIG: IndustryConfig = {
+    id: 'ai_transformation_v1',
+    name: 'AI Digital Transformation Analysis',
+    description: 'A specialized persona that focuses on identifying opportunities where AI and automation can drive significant digital transformation and ROI.',
+    enabled: true,
+    systemPrompt: `
+    You are an expert AI implementation consultant. Your task is to analyze a company's website to identify 2-3 high-impact opportunities where AI solutions could deliver measurable ROI. Ground your analysis in real-time data using Google Search.
 
-TARGET PRACTICE TYPES (analyze only these):
-- Periodontal practices (periodontists) - PRIMARY TARGET
-- General dental practices offering periodontal services
-- Prosthodontic practices dealing with implants
-- Oral surgery practices handling implants and soft tissue
+    CRITICAL: Your entire response must be a single, valid JSON object, starting with '{' and ending with '}'. Do not include any text, explanation, or markdown formatting before or after the JSON object.
 
-EXCLUDE: Endodontic practices (root canal specialists), orthodontists, pediatric dentists.
+    Analyze the company: {companyName} ({websiteUrl}).
 
-TECHNOLOGY FOCUS - PerioLase MVP-7 Laser System enables:
-1. LANAP Protocol: Minimally invasive alternative to gum surgery for treating periodontal disease.
-2. LAPIP Protocol: Treatment for failing dental implants.
-3. Value-Added Procedures (VAPS): Various soft tissue procedures.
-
-REFERRAL POTENTIAL ANALYSIS (CRITICAL):
-Your primary goal is to identify "Referral Generators" - general practices that currently send patients to specialists for perio/implant procedures. This represents a major "lost revenue" opportunity for them.
-- If a practice is a Referral Generator, frame the "problem" as lost revenue and the "solution" as adopting the PerioLase to keep high-value cases in-house.
-- Analyze their website for phrases like "works with specialists", "referrals to periodontists", or a lack of advanced perio/implant services.
-- In the 'referralPotential.notes', explain your reasoning, focusing on evidence of them referring cases out.
-
-ROI CALCULATION FRAMEWORK:
-- LANAP cases: $200,000-250,000 annual potential
-- LAPIP cases: $150,000-180,000 annual potential  
-- VAPS procedures: $80,000-120,000 annual potential
-- Timeline: 4-15 months depending on practice size
-
-CRITICAL: Use ONLY information from Google Search grounding. Cite all sources.
-
-Provide analysis in this JSON structure:
-{
-  "practiceType": "periodontics|general_dentistry|prosthodontics|oral_surgery|excluded",
-  "practiceTypeJustification": "string (Explain WHY you chose this practice type based on their services, staff, or 'about us' page.)",
-  "isTargetPractice": boolean,
-  "opportunityScore": 0-100,
-  "estimatedAnnualROI": "$XXX,XXX",
-  "opportunities": [
+    Respond with the following JSON structure:
     {
-      "title": "string",
-      "problem": "string",
-      "solution": "string",
-      "estimatedImpact": "string",
-      "timeline": "string"
+      "opportunityScore": <number, 0-100, assessing overall potential>,
+      "estimatedAnnualROI": "<string, e.g., '$XXX,XXX'>",
+      "opportunities": [
+        {
+          "title": "<string, concise title of the AI opportunity>",
+          "problem": "<string, the specific problem this opportunity solves for the company>",
+          "solution": "<string, a high-level description of the proposed AI solution>",
+          "estimatedImpact": "<string, estimated annual financial impact, e.g., '$XXX,XXX'>",
+          "timeline": "<string, e.g., '6-9 months'>"
+        }
+      ],
+      "keyInsights": [
+        "<string, a key insight about the company's readiness for AI adoption>"
+      ]
     }
-  ],
-  "referralPotential": {
-    "type": "receiver|generator|both|none",
-    "score": "low|medium|high",
-    "notes": "string (Explain WHY you chose this type and score, focusing on evidence of them referring cases out.)"
-  },
-  "keyInsights": ["string"],
-  "sources": ["url"]
-}
-  `.trim(),
-  
-  referralAnalysisPrompt: `
-REFERRAL NETWORK ASSESSMENT:
+    `,
+    opportunityTemplates: [],
+    scoringCriteria: {
+        highPriorityIndicators: [{ keyword: 'digital transformation', points: 15 }, { keyword: 'technology', points: 10 }],
+        mediumPriorityIndicators: [{ keyword: 'innovation', points: 5 }, { keyword: 'growth', points: 5 }],
+        referralIndicators: [],
+        disqualifiers: []
+    },
+    productFocus: 'AI Implementation Services'
+};
 
-1. REFERRAL RECEIVER (Specialist Practice):
-   - Does this practice accept referrals from general dentists?
-   - Do they market to referring dentists?
-   - Are they positioned as a specialty center?
-   → If YES: HIGH-VALUE target (referral hub potential)
+// 3. The highly specialized Millennium Dental Config
+const MILLENNIUM_DENTAL_CONFIG: IndustryConfig = {
+    id: 'millennium_dental_v1',
+    name: 'Millennium Dental (PerioLase)',
+    description: 'Analyzes dental practices for their potential to adopt the PerioLase MVP-7 laser and LANAP/LAPIP protocols.',
+    enabled: true,
+    clientName: 'Millennium Dental Technologies, Inc.',
+    productFocus: 'PerioLase® MVP-7™ Laser System',
+    systemPrompt: `
+    You are analyzing dental practices for their potential to adopt the PerioLase MVP-7 laser 
+    and LANAP protocol from Millennium Dental Technologies.
 
-2. REFERRAL GENERATOR (General Practice):
-   - Does this practice currently refer periodontal cases out?
-   - Do they refer implant cases to specialists?
-   → If YES: Opportunity to KEEP cases in-house with PerioLase
+    TARGET PRACTICE TYPES (analyze only these):
+    - Periodontal practices (periodontists) - PRIMARY TARGET
+    - General dental practices offering periodontal services
+    - Prosthodontic practices dealing with implants
+    - Oral surgery practices handling implants and soft tissue
 
-3. NETWORK EXPANSION POTENTIAL:
-   - Could this practice attract MORE referrals with PerioLase?
-   - Could they become a regional LANAP/LAPIP center?
-   
-Rate: LOW / MEDIUM / HIGH and explain the opportunity.
-  `.trim(),
-  
-  scoringCriteria: {
-    highPriorityIndicators: [
-      { keyword: 'periodontist', points: 30 },
-      { keyword: 'periodontal surgery', points: 30 },
-      { keyword: 'dental implants', points: 30 },
-      { keyword: 'advanced technology', points: 30 },
-      { keyword: 'minimally invasive', points: 30 }
-    ],
-    mediumPriorityIndicators: [
-      { keyword: 'laser dentistry', points: 20 },
-      { keyword: 'gum disease', points: 20 },
-      { keyword: 'bone grafting', points: 20 },
-      { keyword: 'patient comfort', points: 20 },
-      { keyword: 'multiple doctors', points: 20 }
-    ],
-    referralIndicators: [
-      { keyword: 'accepting referrals', points: 20 },
-      { keyword: 'referring dentists', points: 20 },
-      { keyword: 'specialist', points: 15 },
-      { keyword: 'referral network', points: 15 }
-    ],
-    disqualifiers: [
-      'endodontist',
-      'endodontic',
-      'root canal specialist',
-      'orthodontist',
-      'orthodontic',
-      'pediatric dentist',
-      'kids dentistry',
-      'children\'s dentistry'
-    ]
-  },
-  
-  opportunityTemplates: [
+    EXCLUDE: Endodontic practices (root canal specialists), orthodontists, pediatric dentists
+
+    TECHNOLOGY FOCUS - PerioLase MVP-7 Laser System enables:
+    1. LANAP Protocol: A minimally invasive alternative to traditional gum surgery for periodontal disease.
+    2. LAPIP Protocol: Treatment for failing dental implants.
+    3. Value-Added Procedures (VAPS): Various soft tissue procedures.
+    
+    ROI CALCULATION FRAMEWORK:
+    - LANAP cases: $200,000-250,000 annual potential
+    - LAPIP cases: $150,000-180,000 annual potential  
+    - VAPS procedures: $80,000-120,000 annual potential
+    - Timeline: 4-15 months depending on practice size
+
+    CRITICAL: Your entire response must be a single, valid JSON object, starting with '{' and ending with '}'. Do not include any text, explanation, or markdown formatting before or after the JSON object.
+    CRITICAL: Provide a clear 'practiceTypeJustification' based on evidence from the website (e.g., 'Website lists "Dr. Smith, Periodontist" on staff page.').
+
+    Analyze the dental practice: {companyName} ({websiteUrl}).
+
+    Provide analysis in this JSON structure:
+    {
+      "practiceType": "periodontics|general_dentistry|prosthodontics|oral_surgery|excluded",
+      "practiceTypeJustification": "<string, the reason for the practice type classification based on website content>",
+      "isTargetPractice": <boolean>,
+      "opportunityScore": <number, 0-100>,
+      "estimatedAnnualROI": "<string, e.g., '$XXX,XXX'>",
+      "opportunities": [
+        {
+          "title": "string",
+          "problem": "string", 
+          "solution": "string",
+          "estimatedImpact": "string",
+          "timeline": "string"
+        }
+      ],
+      "referralPotential": {
+        "type": "receiver|generator|both|none",
+        "score": "low|medium|high",
+        "notes": "string"
+      },
+      "keyInsights": ["string"]
+    }
+    `,
+    referralAnalysisPrompt: `
+    REFERRAL NETWORK ASSESSMENT:
+
+    Your key objective is to identify practices that are currently REFERRING OUT high-value periodontal and implant cases. Frame this as a 'lost revenue' problem.
+
+    1. REFERRAL GENERATOR (General Practice):
+      - Does this practice currently refer periodontal cases out to specialists?
+      - Do they refer implant cases to specialists?
+      → If YES: This is a prime opportunity. The solution is to adopt the PerioLase MVP-7 to KEEP these valuable cases in-house, significantly boosting their revenue. Frame your 'notes' around this 'lost revenue' angle.
+
+    2. REFERRAL RECEIVER (Specialist Practice):
+      - Does this practice accept referrals from general dentists?
+      - Are they positioned as a specialty center?
+      → If YES: HIGH-VALUE target. They can expand their referral network by offering advanced, minimally-invasive LANAP/LAPIP procedures, making them more attractive to referring GPs.
+      
+    Rate: LOW / MEDIUM / HIGH and explain the opportunity based on the above.
+    `,
+    scoringCriteria: {
+        highPriorityIndicators: [ { keyword: 'periodontist', points: 30 }, { keyword: 'periodontal surgery', points: 30 }, { keyword: 'dental implants', points: 30 } ],
+        mediumPriorityIndicators: [ { keyword: 'laser dentistry', points: 20 }, { keyword: 'gum disease', points: 20 } ],
+        referralIndicators: [ { keyword: 'accepting referrals', points: 20 }, { keyword: 'referring dentists', points: 20 } ],
+        disqualifiers: [ 'endodontist', 'orthodontist', 'pediatric dentist' ]
+    },
+    opportunityTemplates: [
     {
       id: 'lanap-protocol',
       title: 'Elevate Periodontal Disease Treatment with LANAP® Protocol',
@@ -315,84 +193,84 @@ Rate: LOW / MEDIUM / HIGH and explain the opportunity.
       applicableWhen: ['emphasizesComfort', 'mentionsAdvancedTech', 'hasMultipleDoctors']
     }
   ],
-  
-  enabled: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
 };
 
-// Registry of all available configurations
+
 export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
-  'default': DEFAULT_CONFIG,
-  'millennium-dental': MILLENNIUM_DENTAL_CONFIG
+    [DEFAULT_CONFIG.id]: DEFAULT_CONFIG,
+    [AI_TRANSFORMATION_CONFIG.id]: AI_TRANSFORMATION_CONFIG,
+    [MILLENNIUM_DENTAL_CONFIG.id]: MILLENNIUM_DENTAL_CONFIG
 };
 
-// --- Configuration Management Helpers ---
 
-// Helper to get all custom configs from localStorage
-export function getCustomConfigs(): Record<string, IndustryConfig> {
-  try {
-    const stored = localStorage.getItem('customIndustryConfigs');
-    if (stored) {
-      return JSON.parse(stored);
+const CUSTOM_CONFIGS_KEY = 'gaen_custom_industry_configs';
+const ACTIVE_CONFIG_KEY = 'gaen_active_industry_config_id';
+
+// --- Custom Config Management ---
+
+export function getCustomConfigs(): IndustryConfig[] {
+    try {
+        const stored = localStorage.getItem(CUSTOM_CONFIGS_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+        console.error("Failed to parse custom configs from localStorage", error);
+        return [];
     }
-  } catch (e) {
-    console.error('Failed to load custom configs:', e);
-  }
-  return {};
 }
 
-// Helper to get a specific config by ID, checking custom then built-in
-export function getConfigById(id: string): IndustryConfig | null {
-  const customConfigs = getCustomConfigs();
-  // Custom config takes precedence over a built-in one with the same ID
-  return customConfigs[id] || INDUSTRY_CONFIGS[id] || null;
-}
-
-// Helper to get the active config, ensuring it's always the latest version
-export function getActiveConfig(): IndustryConfig {
-  try {
-    const storedId = localStorage.getItem('activeIndustryConfigId');
-    if (storedId) {
-      const config = getConfigById(storedId);
-      if (config) return config;
-    }
-  } catch (e) {
-    console.error('Failed to load active config ID:', e);
-  }
-  // Fallback to default if nothing is stored or the ID is invalid
-  return DEFAULT_CONFIG;
-}
-
-// Helper to save the active config ID to localStorage
-export function setActiveConfig(config: IndustryConfig): void {
-  try {
-    localStorage.setItem('activeIndustryConfigId', config.id);
-  } catch (e) {
-    console.error('Failed to save active config:', e);
-  }
-}
-
-// Helper to save a custom config
-export function saveCustomConfig(config: IndustryConfig): void {
-  try {
+export function saveCustomConfig(configToSave: IndustryConfig): void {
     const customConfigs = getCustomConfigs();
-    customConfigs[config.id] = config;
-    localStorage.setItem('customIndustryConfigs', JSON.stringify(customConfigs));
-  } catch (e) {
-    console.error('Failed to save custom config:', e);
-  }
+    const existingIndex = customConfigs.findIndex(c => c.id === configToSave.id);
+
+    if (existingIndex > -1) {
+        customConfigs[existingIndex] = configToSave;
+    } else {
+        customConfigs.push(configToSave);
+    }
+    localStorage.setItem(CUSTOM_CONFIGS_KEY, JSON.stringify(customConfigs));
 }
 
-// Helper to get all configs (built-in + custom), ensuring custom configs override built-ins
+export function deleteCustomConfig(configId: string): void {
+    let customConfigs = getCustomConfigs();
+    customConfigs = customConfigs.filter(c => c.id !== configId);
+    localStorage.setItem(CUSTOM_CONFIGS_KEY, JSON.stringify(customConfigs));
+}
+
+// --- Combined & Active Config Management ---
+
 export function getAllConfigs(): IndustryConfig[] {
-  const builtIn = Object.values(INDUSTRY_CONFIGS);
-  const custom = Object.values(getCustomConfigs());
-  
-  // Use a Map to ensure uniqueness and that custom configs override built-ins
-  const allConfigsMap = new Map<string, IndustryConfig>();
-  builtIn.forEach(c => allConfigsMap.set(c.id, c));
-  custom.forEach(c => allConfigsMap.set(c.id, c)); // custom will overwrite built-in if IDs match
-  
-  return Array.from(allConfigsMap.values());
+    const builtIn = Object.values(INDUSTRY_CONFIGS);
+    const custom = getCustomConfigs();
+    // Show enabled configs first, then sort by name
+    const all = [...builtIn, ...custom].sort((a, b) => {
+      if (a.enabled && !b.enabled) return -1;
+      if (!a.enabled && b.enabled) return 1;
+      return a.name.localeCompare(b.name);
+    });
+    return all;
+}
+
+export function setActiveConfig(config: IndustryConfig): void {
+    localStorage.setItem(ACTIVE_CONFIG_KEY, config.id);
+}
+
+export function getActiveConfig(): IndustryConfig {
+    const allConfigs = getAllConfigs();
+    const activeId = localStorage.getItem(ACTIVE_CONFIG_KEY);
+
+    if (activeId) {
+        const activeConfig = allConfigs.find(c => c.id === activeId && c.enabled);
+        if (activeConfig) {
+            return activeConfig;
+        }
+    }
+    
+    // Fallback logic: find first enabled config, or default.
+    const firstEnabled = allConfigs.find(c => c.enabled);
+    if (firstEnabled) {
+        setActiveConfig(firstEnabled);
+        return firstEnabled;
+    }
+
+    return DEFAULT_CONFIG;
 }

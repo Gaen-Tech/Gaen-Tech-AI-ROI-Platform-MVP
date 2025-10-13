@@ -11,8 +11,9 @@ import {
     LightbulbIcon,
     ZapIcon,
 } from './icons/Icon';
-import type { Lead, View } from '../types';
-import { getAllConfigs, getActiveConfig, setActiveConfig, IndustryConfig } from '../config/industryConfigs';
+// FIX: The IndustryConfig type should be imported from the types file, not the config file.
+import type { Lead, View, IndustryConfig } from '../types';
+import { getAllConfigs, getActiveConfig, setActiveConfig } from '../config/industryConfigs';
 
 interface DashboardProps {
   leads: Lead[];

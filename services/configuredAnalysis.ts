@@ -1,6 +1,7 @@
 import { analyzeCompanyWebsite } from './geminiService';
-import { getActiveConfig, type IndustryConfig } from '../config/industryConfigs';
-import type { Lead, Company, AnalysisResult, Industry } from '../types';
+// FIX: The IndustryConfig type should be imported from the types file, not the config file.
+import { getActiveConfig } from '../config/industryConfigs';
+import type { Lead, Company, AnalysisResult, Industry, IndustryConfig } from '../types';
 
 /**
  * The main entry point for performing a comprehensive, configuration-driven analysis.
@@ -116,18 +117,21 @@ function calculateConfigScore(lead: Lead, config: IndustryConfig): number {
   config.scoringCriteria.highPriorityIndicators.forEach(indicator => {
     if (fullText.includes(indicator.keyword.toLowerCase())) {
       score += indicator.points;
+      console.log(`+${indicator.points} points for: ${indicator.keyword}`);
     }
   });
   
   config.scoringCriteria.mediumPriorityIndicators.forEach(indicator => {
     if (fullText.includes(indicator.keyword.toLowerCase())) {
       score += indicator.points;
+      console.log(`+${indicator.points} points for: ${indicator.keyword}`);
     }
   });
   
   config.scoringCriteria.referralIndicators.forEach(indicator => {
     if (fullText.includes(indicator.keyword.toLowerCase())) {
       score += indicator.points;
+      console.log(`+${indicator.points} points for referral indicator: ${indicator.keyword}`);
     }
   });
   
@@ -136,6 +140,7 @@ function calculateConfigScore(lead: Lead, config: IndustryConfig): number {
   );
   
   if (hasDisqualifier) {
+    console.log('DISQUALIFIER FOUND - setting score to 0');
     return 0;
   }
   

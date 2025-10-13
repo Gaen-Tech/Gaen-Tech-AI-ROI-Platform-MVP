@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View } from '../types';
-import { DashboardIcon, SearchIcon, LeadsIcon, MenuIcon, XIcon, SparklesIcon } from './icons/Icon';
+import { DashboardIcon, SearchIcon, LeadsIcon, MenuIcon, XIcon, SparklesIcon, SettingsIcon } from './icons/Icon';
 
 interface NavigationProps {
   currentView: View;
@@ -41,6 +41,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, setView }) 
         { view: 'dashboard', label: 'Dashboard', icon: <DashboardIcon className="w-5 h-5" /> },
         { view: 'discovery', label: 'Discovery', icon: <SearchIcon className="w-5 h-5" /> },
         { view: 'leads', label: 'Leads', icon: <LeadsIcon className="w-5 h-5" /> },
+        { view: 'configuration', label: 'Configuration', icon: <SettingsIcon className="w-5 h-5" /> },
     ];
 
     const handleNavClick = (view: View) => {

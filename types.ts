@@ -1,6 +1,4 @@
-// FIX: Removed self-import of 'Industry' which caused a declaration conflict.
-
-export type View = 'dashboard' | 'discovery' | 'leads';
+export type View = 'dashboard' | 'discovery' | 'leads' | 'configuration';
 
 export enum Industry {
   TECH = 'Technology',
@@ -64,4 +62,34 @@ export interface Lead {
   status: LeadStatus;
   createdAt: string;
   metadata?: Record<string, any>;
+}
+
+export interface IndustryConfig {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  systemPrompt: string;
+  referralAnalysisPrompt?: string;
+  opportunityTemplates: Array<{
+    id?: string;
+    title: string;
+    problemTemplate?: string;
+    solutionTemplate?: string;
+    estimatedImpactRange?: { min: number; max: number };
+    timelineMonths?: { min: number; max: number };
+    applicableWhen?: string[];
+  }>;
+  scoringCriteria: {
+    highPriorityIndicators: Array<{ keyword: string; points: number }>;
+    mediumPriorityIndicators: Array<{ keyword: string; points: number }>;
+    referralIndicators: Array<{ keyword: string; points: number }>;
+    disqualifiers: string[];
+  };
+  productFocus?: string;
+  clientName?: string;
+  targetCompanyTypes?: string[];
+  excludedCompanyTypes?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }

@@ -1,10 +1,10 @@
-
 import React, { useState, useCallback } from 'react';
 import Dashboard from './components/Dashboard';
 import { Discovery } from './components/Discovery';
 import Leads from './components/Leads';
 import { Navigation } from './components/Sidebar';
 import { View, Lead } from './types';
+import { IndustryConfigPage } from './components/IndustryConfig';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
@@ -42,6 +42,8 @@ const App: React.FC = () => {
         return <Discovery onAnalyzeComplete={addLead} setView={setView} />;
       case 'leads':
         return <Leads leads={leads} onUpdateLead={updateLead} setView={setView} />;
+      case 'configuration':
+        return <IndustryConfigPage setView={setView} />;
       default:
         return <Dashboard leads={leads} setView={setView} />;
     }
