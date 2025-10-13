@@ -1,3 +1,5 @@
+// FIX: Removed self-import of 'Industry' which caused a declaration conflict.
+
 export type View = 'dashboard' | 'discovery' | 'leads';
 
 export enum Industry {
@@ -38,10 +40,19 @@ export interface GroundingSource {
 export interface AnalysisResult {
   opportunityScore: number;
   keyOpportunities: OpportunityDetail[];
-  totals: {
-    estimatedAnnualROI: number;
-  };
+  estimatedAnnualROI: number; // Now a direct property
   sources?: GroundingSource[];
+  
+  // Optional fields from new configs
+  practiceType?: string;
+  practiceTypeJustification?: string; // Added for categorization reasoning
+  isTargetPractice?: boolean;
+  referralPotential?: {
+    type: "receiver" | "generator" | "both" | "none";
+    score: "low" | "medium" | "high";
+    notes: string;
+  };
+  keyInsights?: string[];
 }
 
 export type LeadStatus = 'prospected' | 'qualified';
@@ -52,9 +63,4 @@ export interface Lead {
   analysis: AnalysisResult;
   status: LeadStatus;
   createdAt: string;
-}
-
-export interface UserProfile {
-  companyName: string;
-  productDescription: string;
 }

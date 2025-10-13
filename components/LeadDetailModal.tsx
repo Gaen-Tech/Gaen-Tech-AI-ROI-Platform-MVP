@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Lead } from '../types';
 import { 
@@ -8,7 +7,8 @@ import {
     ClockIcon, 
     LinkIcon,
     LightbulbIcon,
-    ZapIcon
+    ZapIcon,
+    SparklesIcon
 } from './icons/Icon';
 
 interface LeadDetailModalProps {
@@ -70,7 +70,7 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose }) => {
           </div>
           <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
             <div className="flex items-center gap-3 text-gray-400 mb-2"><DollarSignIcon className="w-5 h-5 text-green-400" /><span>Estimated Annual ROI</span></div>
-            <p className="text-3xl font-bold text-white">${(lead.analysis.totals.estimatedAnnualROI / 1000).toFixed(0)}K</p>
+            <p className="text-3xl font-bold text-white">${(lead.analysis.estimatedAnnualROI / 1000).toFixed(0)}K</p>
           </div>
           <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
             <div className="flex items-center gap-3 text-gray-400 mb-2"><ClockIcon className="w-5 h-5 text-orange-400" /><span>Analyzed On</span></div>
@@ -110,6 +110,51 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose }) => {
             ))}
           </div>
         </section>
+
+        {lead.analysis.keyInsights && lead.analysis.keyInsights.length > 0 && (
+            <section className="mb-8">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><SparklesIcon className="w-5 h-5 text-purple-400" /> Key Insights</h3>
+                <ul className="space-y-2 pl-6">
+                    {lead.analysis.keyInsights.map((insight, index) => (
+                        <li key={index} className="relative pl-4 text-gray-300">
+                           <div className="absolute left-0 top-1.5 w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+                           {insight}
+                        </li>
+                    ))}
+                </ul>
+            </section>
+        )}
+
+        {(lead.analysis.practiceType || lead.analysis.referralPotential) && (
+            <section className="mb-8">
+                <h3 className="text-xl font-bold text-white mb-4">Practice Specifics</h3>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                    {lead.analysis.practiceType && (
+                        <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700">
+                            <strong className="text-gray-400 block mb-1">Practice Type:</strong>
+                            <div>
+                                <span className="text-white capitalize font-semibold">{lead.analysis.practiceType.replace(/_/g, ' ')}</span>
+                                {typeof lead.analysis.isTargetPractice === 'boolean' && (
+                                    <span className={`ml-2 px-2 py-0.5 rounded text-xs ${lead.analysis.isTargetPractice ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                        {lead.analysis.isTargetPractice ? 'High Priority' : 'Non-Target'}
+                                    </span>
+                                )}
+                            </div>
+                            {lead.analysis.practiceTypeJustification && (
+                                <p className="text-xs text-gray-500 mt-1">{lead.analysis.practiceTypeJustification}</p>
+                            )}
+                        </div>
+                    )}
+                    {lead.analysis.referralPotential && (
+                         <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700">
+                            <strong className="text-gray-400 block mb-1">Referral Potential:</strong>
+                            <span className="text-white capitalize font-semibold">{lead.analysis.referralPotential.score} ({lead.analysis.referralPotential.type})</span>
+                            <p className="text-xs text-gray-500 mt-1">{lead.analysis.referralPotential.notes}</p>
+                        </div>
+                    )}
+                </div>
+            </section>
+        )}
 
         {lead.analysis.sources && lead.analysis.sources.length > 0 && (
           <section>

@@ -41,7 +41,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
         case 'score':
           return b.analysis.opportunityScore - a.analysis.opportunityScore;
         case 'roi':
-          return b.analysis.totals.estimatedAnnualROI - a.analysis.totals.estimatedAnnualROI;
+          return b.analysis.estimatedAnnualROI - a.analysis.estimatedAnnualROI;
         case 'date':
         default:
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -69,7 +69,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
   };
 
   const totalROI = filteredLeads.reduce((sum, lead) => 
-    sum + (lead.analysis.totals.estimatedAnnualROI || 0), 0
+    sum + (lead.analysis.estimatedAnnualROI || 0), 0
   );
   const avgScore = filteredLeads.length > 0
     ? Math.round(filteredLeads.reduce((sum, lead) => sum + lead.analysis.opportunityScore, 0) / filteredLeads.length)
@@ -148,7 +148,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
                 </div>
                 <div className="space-y-3 mb-4">
                   <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><BarChart3Icon className="w-4 h-4 text-cyan-400" /><span className="text-sm">Opportunity Score</span></div><div className="flex items-center gap-2"><div className="w-24 h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full" style={{ width: `${lead.analysis.opportunityScore}%` }}></div></div><span className="text-sm font-bold text-white">{lead.analysis.opportunityScore}</span></div></div>
-                  <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" /><span className="text-sm">Annual ROI</span></div><span className="text-sm font-bold text-white">${(lead.analysis.totals.estimatedAnnualROI / 1000).toFixed(0)}K</span></div>
+                  <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" /><span className="text-sm">Annual ROI</span></div><span className="text-sm font-bold text-white">${(lead.analysis.estimatedAnnualROI / 1000).toFixed(0)}K</span></div>
                   <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><TargetIcon className="w-4 h-4 text-purple-400" /><span className="text-sm">Opportunities</span></div><span className="text-sm font-bold text-white">{lead.analysis.keyOpportunities.length}</span></div>
                   <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-400"><ClockIcon className="w-4 h-4 text-orange-400" /><span className="text-sm">Analyzed</span></div><span className="text-sm font-bold text-white">{new Date(lead.createdAt).toLocaleDateString()}</span></div>
                 </div>

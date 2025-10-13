@@ -1,17 +1,14 @@
+
 import React, { useState, useCallback } from 'react';
 import Dashboard from './components/Dashboard';
 import { Discovery } from './components/Discovery';
 import Leads from './components/Leads';
 import { Navigation } from './components/Sidebar';
-import { View, Lead, Company, AnalysisResult, UserProfile } from './types';
+import { View, Lead, Company, AnalysisResult } from './types';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    companyName: 'Gaen Tech',
-    productDescription: 'delivers digital transformation and simplifies business through AI',
-  });
   
   const addLead = useCallback((company: Company, analysis: AnalysisResult) => {
     const newLead: Lead = {
@@ -48,13 +45,14 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (view) {
       case 'dashboard':
-        return <Dashboard leads={leads} setView={setView} userProfile={userProfile} setUserProfile={setUserProfile} />;
+        return <Dashboard leads={leads} setView={setView} />;
       case 'discovery':
-        return <Discovery onAnalyzeComplete={addLead} setView={setView} userProfile={userProfile} />;
+        return <Discovery onAnalyzeComplete={addLead} setView={setView} />;
       case 'leads':
+        // FIX: The 'leads' prop should receive the 'leads' array, and the 'onUpdateLead' prop should receive the 'updateLead' function.
         return <Leads leads={leads} onUpdateLead={updateLead} setView={setView} />;
       default:
-        return <Dashboard leads={leads} setView={setView} userProfile={userProfile} setUserProfile={setUserProfile} />;
+        return <Dashboard leads={leads} setView={setView} />;
     }
   };
 

@@ -1,15 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SearchIcon, SparklesIcon, TrendingUpIcon, TargetIcon, ChevronRightIcon, AlertCircleIcon, LoadingSpinner, RefreshCwIcon } from './icons/Icon';
 import { analyzeCompanyWebsite } from '../services/geminiService';
-import type { View, Company, AnalysisResult, Industry, UserProfile } from '../types';
+import type { View, Company, AnalysisResult, Industry } from '../types';
 
 interface DiscoveryProps {
   onAnalyzeComplete: (company: Company, analysis: AnalysisResult) => void;
   setView: (view: View) => void;
-  userProfile: UserProfile;
 }
 
-export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView, userProfile }) => {
+export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView }) => {
   const [url, setUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +57,7 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
             location: 'Online',
             contact: `info@${hostname}`
         };
-        const analysisResult = await analyzeCompanyWebsite(tempCompany, userProfile);
+        const analysisResult = await analyzeCompanyWebsite(tempCompany);
         
         stopProgress();
         setProgress(100);

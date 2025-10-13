@@ -1,62 +1,42 @@
 import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
-import { Company, AnalysisResult, OpportunityDetail, GroundingSource, UserProfile } from '../types';
+import { Company, AnalysisResult, OpportunityDetail, GroundingSource } from '../types';
+import { getActiveConfig } from '../config/industryConfigs';
 
-// This function now expects a Company object without an ID
-export const analyzeCompanyWebsite = async (
-  company: Omit<Company, 'id' | 'location' | 'contact'>,
-  userProfile: UserProfile
-): Promise<AnalysisResult> => {
-  const prompt = `
-    You are a senior business consultant for "${userProfile.companyName}", a company that specializes in "${userProfile.productDescription}".
-    Your goal is to analyze a potential lead based on their company information and website to identify high-value opportunities where they would benefit from your company's solutions. You MUST use real-time data from your search tool to ensure the analysis is accurate and up-to-date.
+// Helper to parse currency strings like "$150,000 - $200,000" or "150000" into a number.
+// It conservatively takes the first number found in a range.
+const parseCurrency = (value: string | number | undefined): number => {
+    if (typeof value === 'number') return value;
+    if (typeof value !== 'string') return 0;
     
+    // Find the first sequence of digits after removing commas
+    const match = value.replace(/,/g, '').match(/\d+/);
+    return match ? Number(match[0]) : 0;
+};
+
+export const analyzeCompanyWebsite = async (
+  company: Omit<Company, 'id' | 'location' | 'contact'>
+): Promise<AnalysisResult> => {
+  const activeConfig = getActiveConfig();
+  
+  const userPrompt = `
     Analyze the following company:
     - Name: ${company.name}
-    - Industry: ${company.industry}
     - Website: ${company.website}
-
-    Based on your search findings and analysis, provide a concise but impactful report.
-    
-    **CRITICAL BUSINESS RULE**: The "estimatedAnnualROI" MUST be between $0 and $500,000. Adjust the "estimatedImpact" for each key opportunity accordingly to meet this requirement. This constraint reflects our current focus on small to medium-sized projects.
-
-    1.  **opportunityScore**: Calculate a score out of 100 based on their digital presence, industry, and potential need for your company's solutions.
-    2.  **keyOpportunities**: Identify the 2-3 most impactful opportunities for this company to leverage your solutions. For each opportunity:
-        - **opportunity**: A brief, compelling title for the opportunity (e.g., "Modernize Patient Imaging with the 'DentalScan Pro'").
-        - **problem**: Clearly state the business problem, inefficiency, or outdated technology this prospect likely faces that your solution addresses. Frame it in terms of missed revenue, high operational costs, or poor patient experience.
-        - **solution**: Describe how your solution (${userProfile.companyName}'s offering) directly solves the stated problem. Focus on the value proposition and key benefits.
-        - **roiTimeline**: Provide a realistic timeframe for seeing a positive return (e.g., "2-8 months").
-        - **estimatedImpact**: Quantify the potential annual financial benefit in USD that your solution could bring.
-    3.  **totals**: An object containing a single key, "estimatedAnnualROI", which is the sum of all estimatedImpacts. This value MUST NOT exceed $500,000.
-
-    Return your analysis strictly in JSON format. Do not include any explanatory text, markdown formatting, or anything outside of the JSON object.
-    
-    Example format:
-    {
-      "opportunityScore": 85,
-      "keyOpportunities": [
-        {
-          "opportunity": "AI Chatbot",
-          "problem": "High customer service costs",
-          "solution": "Automated 24/7 support",
-          "roiTimeline": "3-6 months",
-          "estimatedImpact": 150000
-        }
-      ],
-      "totals": {
-        "estimatedAnnualROI": 150000
-      }
-    }
+    - Industry: ${company.industry}
   `;
+  
+  const systemInstruction = activeConfig.systemPrompt;
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   try {
-    console.log("🔍 Analyzing company:", company.name, "with persona:", userProfile.companyName);
+    console.log(`🔍 Analyzing company: ${company.name} with config: "${activeConfig.name}"`);
     
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: prompt,
+      contents: userPrompt,
       config: {
+        systemInstruction,
         temperature: 0.5,
         tools: [{ googleSearch: {} }],
       },
@@ -85,38 +65,57 @@ export const analyzeCompanyWebsite = async (
     const analysis = JSON.parse(jsonText);
     console.log("✅ Parsed analysis:", analysis);
     
-    // --- Data Validation and Fallbacks ---
+    // --- Data Validation and Normalization ---
     const validatedAnalysis: Partial<AnalysisResult> = {};
 
     validatedAnalysis.opportunityScore = typeof analysis.opportunityScore === 'number'
       ? analysis.opportunityScore
       : 75;
-    
-    console.log("✅ AI Score:", validatedAnalysis.opportunityScore);
 
-    if (Array.isArray(analysis.keyOpportunities) && analysis.keyOpportunities.length > 0) {
-      validatedAnalysis.keyOpportunities = analysis.keyOpportunities.filter((op: OpportunityDetail) => 
-        op && typeof op.opportunity === 'string' && typeof op.estimatedImpact === 'number'
-      );
+    // Handle both 'keyOpportunities' and 'opportunities'
+    const rawOpportunities = analysis.keyOpportunities || analysis.opportunities;
+
+    if (Array.isArray(rawOpportunities) && rawOpportunities.length > 0) {
+      validatedAnalysis.keyOpportunities = rawOpportunities
+        .map((op: any): OpportunityDetail | null => {
+            if (!op || !(op.opportunity || op.title) || !op.problem || !op.solution) {
+                return null;
+            }
+            return {
+                opportunity: op.opportunity || op.title,
+                problem: op.problem,
+                solution: op.solution,
+                roiTimeline: op.roiTimeline || op.timeline || "3-9 months",
+                estimatedImpact: parseCurrency(op.estimatedImpact),
+            };
+        })
+        .filter((op): op is OpportunityDetail => op !== null); // Allow $0 impact opportunities, the final ROI check will handle invalid totals.
+
       if (validatedAnalysis.keyOpportunities.length === 0) {
-        throw new Error("Analysis failed: All opportunities were invalid.");
+        throw new Error("Analysis failed: All opportunities were invalid or had $0 impact.");
       }
     } else {
       throw new Error("Analysis failed: The AI response was missing key opportunity data.");
     }
     
-    validatedAnalysis.totals = { estimatedAnnualROI: 0 };
-    if (analysis.totals && typeof analysis.totals.estimatedAnnualROI === 'number') {
-      validatedAnalysis.totals.estimatedAnnualROI = analysis.totals.estimatedAnnualROI;
-    } else {
-      validatedAnalysis.totals.estimatedAnnualROI = validatedAnalysis.keyOpportunities.reduce(
-        (sum, op) => sum + (op.estimatedImpact || 0), 0
-      );
+    // Parse top-level ROI or calculate it from opportunities if missing
+    validatedAnalysis.estimatedAnnualROI = parseCurrency(analysis.estimatedAnnualROI);
+    if (validatedAnalysis.estimatedAnnualROI === 0) {
+        validatedAnalysis.estimatedAnnualROI = validatedAnalysis.keyOpportunities.reduce(
+            (sum, op) => sum + op.estimatedImpact, 0
+        );
     }
     
-    if (validatedAnalysis.totals.estimatedAnnualROI === 0) {
-      throw new Error("Analysis failed: ROI calculated to $0.");
+    if (validatedAnalysis.estimatedAnnualROI === 0 && !activeConfig.id.includes('dental')) { // Allow $0 for non-targets in dental
+        throw new Error("Analysis failed: ROI calculated to $0.");
     }
+
+    // Add new optional fields from configs
+    if (analysis.practiceType) validatedAnalysis.practiceType = analysis.practiceType;
+    if (analysis.practiceTypeJustification) validatedAnalysis.practiceTypeJustification = analysis.practiceTypeJustification;
+    if (typeof analysis.isTargetPractice === 'boolean') validatedAnalysis.isTargetPractice = analysis.isTargetPractice;
+    if (analysis.referralPotential) validatedAnalysis.referralPotential = analysis.referralPotential;
+    if (analysis.keyInsights) validatedAnalysis.keyInsights = analysis.keyInsights;
     
     const sources: GroundingSource[] = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     console.log("✅ Found", sources.length, "sources");

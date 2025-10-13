@@ -10,24 +10,23 @@ import {
     ChevronRightIcon,
     LightbulbIcon,
     ZapIcon,
-    CheckCircleIcon
 } from './icons/Icon';
-import type { Lead, View, UserProfile } from '../types';
+import type { Lead, View } from '../types';
+import { getAllConfigs, getActiveConfig, setActiveConfig, IndustryConfig } from '../config/industryConfigs';
 
 interface DashboardProps {
   leads: Lead[];
   setView: (view: View) => void;
-  userProfile: UserProfile;
-  setUserProfile: (profile: UserProfile) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setUserProfile }) => {
-  const [localProfile, setLocalProfile] = useState<UserProfile>(userProfile);
-  const [isSaved, setIsSaved] = useState(false);
+const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
+  const [activeConfigId, setActiveConfigId] = useState<string>(() => getActiveConfig().id);
+  const allConfigs = getAllConfigs();
+  const activeConfig = getActiveConfig();
 
   const totalLeads = leads.length;
   const qualifiedLeads = leads.filter(lead => lead.status === 'qualified').length;
-  const totalROI = leads.reduce((sum, lead) => sum + (lead.analysis.totals.estimatedAnnualROI || 0), 0);
+  const totalROI = leads.reduce((sum, lead) => sum + (lead.analysis.estimatedAnnualROI || 0), 0);
   const avgOpportunityScore = leads.length > 0
     ? Math.round(leads.reduce((sum, lead) => sum + lead.analysis.opportunityScore, 0) / leads.length)
     : 0;
@@ -36,20 +35,15 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setU
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
 
-  const isProfileChanged = userProfile.companyName !== localProfile.companyName || userProfile.productDescription !== localProfile.productDescription;
-
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setLocalProfile(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    if (isSaved) {
-        setIsSaved(false);
+  const handleConfigChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newConfigId = e.target.value;
+    const newConfig = allConfigs.find(c => c.id === newConfigId);
+    if (newConfig) {
+      setActiveConfig(newConfig);
+      setActiveConfigId(newConfigId);
     }
   };
 
-  const handleSaveProfile = () => {
-    setUserProfile(localProfile);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
-  };
 
   return (
     <div className="relative text-gray-100">
@@ -135,7 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setU
                                         <p className="text-gray-400 text-sm mb-2">{lead.company.website}</p>
                                         <div className="flex flex-wrap items-center gap-4 text-sm">
                                             <div className="flex items-center gap-1 text-gray-400"><BarChart3Icon className="w-4 h-4 text-cyan-400" />Score: {lead.analysis.opportunityScore}/100</div>
-                                            <div className="flex items-center gap-1 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" />${(lead.analysis.totals.estimatedAnnualROI / 1000).toFixed(0)}K ROI</div>
+                                            <div className="flex items-center gap-1 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" />${(lead.analysis.estimatedAnnualROI / 1000).toFixed(0)}K ROI</div>
                                             <div className="flex items-center gap-1 text-gray-400"><ClockIcon className="w-4 h-4 text-purple-400" />{new Date(lead.createdAt).toLocaleDateString()}</div>
                                         </div>
                                     </div>
@@ -149,48 +143,27 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView, userProfile, setU
                 </div>
                 <div className="space-y-6">
                     <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6">
-                      <h3 className="text-xl font-bold text-white mb-4">Your Sales Persona</h3>
+                      <h3 className="text-xl font-bold text-white mb-4">Analysis Configuration</h3>
                       <div className="space-y-4">
                         <div>
-                          <label htmlFor="companyName" className="block text-sm font-medium text-gray-400 mb-1">Your Company Name</label>
-                          <input
-                            type="text"
-                            id="companyName"
-                            name="companyName"
-                            value={localProfile.companyName}
-                            onChange={handleProfileChange}
+                          <label htmlFor="configSelector" className="block text-sm font-medium text-gray-400 mb-1">
+                            Active Persona
+                          </label>
+                          <select
+                            id="configSelector"
+                            name="configSelector"
+                            value={activeConfigId}
+                            onChange={handleConfigChange}
                             className="w-full px-3 py-2 bg-slate-900/80 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                          />
+                          >
+                            {allConfigs.map(config => (
+                              <option key={config.id} value={config.id}>{config.name}</option>
+                            ))}
+                          </select>
+                          <p className="text-xs text-gray-500 mt-2">
+                            {activeConfig.description}
+                          </p>
                         </div>
-                        <div>
-                          <label htmlFor="productDescription" className="block text-sm font-medium text-gray-400 mb-1">Your Products/Services</label>
-                          <textarea
-                            id="productDescription"
-                            name="productDescription"
-                            rows={3}
-                            value={localProfile.productDescription}
-                            onChange={handleProfileChange}
-                            className="w-full px-3 py-2 bg-slate-900/80 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            placeholder="e.g., high-end dental imaging equipment and practice management software"
-                          />
-                        </div>
-                        <button
-                          onClick={handleSaveProfile}
-                          disabled={!isProfileChanged || isSaved}
-                          className={`w-full mt-2 px-4 py-2 font-semibold rounded-lg transition flex items-center justify-center gap-2 ${
-                            isSaved
-                              ? 'bg-green-600 text-white cursor-not-allowed'
-                              : isProfileChanged
-                              ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                              : 'bg-slate-700 text-gray-500 cursor-not-allowed'
-                          }`}
-                        >
-                          {isSaved ? (
-                              <><CheckCircleIcon className="w-5 h-5" /> Persona Saved!</>
-                          ) : (
-                              'Update Persona'
-                          )}
-                        </button>
                       </div>
                     </div>
                     <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-cyan-500/50 transition">

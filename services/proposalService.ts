@@ -77,7 +77,7 @@ export const generateProposal = (lead: Lead): void => {
   };
   
   drawCard(margin, yPos, 'Opportunity Score', `${lead.analysis.opportunityScore}/100`, [255, 255, 255]);
-  drawCard(margin + cardWidth + 10, yPos, 'Estimated Annual ROI', `$${lead.analysis.totals.estimatedAnnualROI.toLocaleString()}`, [74, 222, 128]);
+  drawCard(margin + cardWidth + 10, yPos, 'Estimated Annual ROI', `$${lead.analysis.estimatedAnnualROI.toLocaleString()}`, [74, 222, 128]);
   drawCard(margin + (cardWidth + 10) * 2, yPos, 'Analyzed On', new Date(lead.createdAt).toLocaleDateString(), [255, 255, 255]);
 
   // Executive Summary Section
