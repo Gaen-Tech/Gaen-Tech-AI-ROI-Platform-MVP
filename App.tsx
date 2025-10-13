@@ -4,21 +4,13 @@ import Dashboard from './components/Dashboard';
 import { Discovery } from './components/Discovery';
 import Leads from './components/Leads';
 import { Navigation } from './components/Sidebar';
-import { View, Lead, Company, AnalysisResult } from './types';
+import { View, Lead } from './types';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
   const [leads, setLeads] = useState<Lead[]>([]);
   
-  const addLead = useCallback((company: Company, analysis: AnalysisResult) => {
-    const newLead: Lead = {
-      id: Date.now().toString(),
-      company,
-      analysis,
-      status: 'prospected',
-      createdAt: new Date().toISOString(),
-    };
-    
+  const addLead = useCallback((newLead: Lead) => {
     let leadExists = false;
     setLeads(prevLeads => {
       if(prevLeads.some(l => l.company.website === newLead.company.website)) {
@@ -49,7 +41,6 @@ const App: React.FC = () => {
       case 'discovery':
         return <Discovery onAnalyzeComplete={addLead} setView={setView} />;
       case 'leads':
-        // FIX: The 'leads' prop should receive the 'leads' array, and the 'onUpdateLead' prop should receive the 'updateLead' function.
         return <Leads leads={leads} onUpdateLead={updateLead} setView={setView} />;
       default:
         return <Dashboard leads={leads} setView={setView} />;

@@ -25,7 +25,7 @@ interface LeadsProps {
 
 const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'prospected' | 'qualified'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | LeadStatus>('all');
   const [sortBy, setSortBy] = useState<'date' | 'score' | 'roi'>('date');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
@@ -75,6 +75,12 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
     ? Math.round(filteredLeads.reduce((sum, lead) => sum + lead.analysis.opportunityScore, 0) / filteredLeads.length)
     : 0;
 
+    const statusStyles: Record<LeadStatus, string> = {
+        'qualified': 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30',
+        'prospected': 'bg-blue-500/20 text-blue-400 border-blue-500/50 hover:bg-blue-500/30',
+        'Unqualified': 'bg-slate-600/20 text-slate-400 border-slate-600/50 hover:bg-slate-600/30',
+    };
+    
   return (
     <div className="relative text-gray-100">
       <div className="absolute inset-0 opacity-10">
@@ -108,6 +114,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
                 <option value="all">All Status</option>
                 <option value="prospected">Prospected</option>
                 <option value="qualified">Qualified</option>
+                <option value="Unqualified">Unqualified</option>
               </select>
               <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
             </div>
@@ -140,9 +147,10 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
                     <a href={`https://${lead.company.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-cyan-400 transition flex items-center gap-1" onClick={(e) => e.stopPropagation()}>{lead.company.website}<ExternalLinkIcon className="w-3 h-3" /></a>
                   </div>
                   <div className="relative">
-                    <select value={lead.status} onChange={(e) => handleStatusChange(lead.id, e.target.value as any)} onClick={(e) => e.stopPropagation()} className={`px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer border-2 appearance-none pr-6 transition capitalize ${lead.status === 'qualified' ? 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/50 hover:bg-blue-500/30'}`}>
+                    <select value={lead.status} onChange={(e) => handleStatusChange(lead.id, e.target.value as any)} onClick={(e) => e.stopPropagation()} className={`px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer border-2 appearance-none pr-6 transition capitalize ${statusStyles[lead.status]}`}>
                       <option value="prospected">Prospected</option>
                       <option value="qualified">Qualified</option>
+                      <option value="Unqualified">Unqualified</option>
                     </select>
                   </div>
                 </div>
@@ -154,7 +162,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, onUpdateLead, setView }) => {
                 </div>
                 {lead.analysis.keyOpportunities.length > 0 && (<div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700"><p className="text-xs text-gray-400 mb-1">Top Opportunity:</p><p className="text-sm text-white font-semibold line-clamp-2">{lead.analysis.keyOpportunities[0].opportunity}</p></div>)}
                 <div className="flex gap-2">
-                  <button onClick={() => handleExportPDF(lead)} className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition flex items-center justify-center gap-2"><DownloadIcon className="w-4 h-4" />Export PDF</button>
+                  <button onClick={() => handleExportPDF(lead)} className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition flex items-center justify-center gap-2" disabled={lead.status === 'Unqualified'}><DownloadIcon className="w-4 h-4" />Export PDF</button>
                   <button className="px-4 py-2 bg-slate-700/50 text-gray-300 font-semibold rounded-lg hover:bg-slate-700 transition flex items-center justify-center gap-2" onClick={() => handleViewDetails(lead)}><FileTextIcon className="w-4 h-4" />Details</button>
                 </div>
               </div>

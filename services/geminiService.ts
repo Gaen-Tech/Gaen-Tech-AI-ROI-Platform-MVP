@@ -14,7 +14,8 @@ const parseCurrency = (value: string | number | undefined): number => {
 };
 
 export const analyzeCompanyWebsite = async (
-  company: Omit<Company, 'id' | 'location' | 'contact'>
+  company: Omit<Company, 'id' | 'location' | 'contact'>,
+  systemInstructionOverride?: string
 ): Promise<AnalysisResult> => {
   const activeConfig = getActiveConfig();
   
@@ -25,7 +26,7 @@ export const analyzeCompanyWebsite = async (
     - Industry: ${company.industry}
   `;
   
-  const systemInstruction = activeConfig.systemPrompt;
+  const systemInstruction = systemInstructionOverride || activeConfig.systemPrompt;
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 

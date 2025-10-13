@@ -55,7 +55,7 @@ export interface AnalysisResult {
   keyInsights?: string[];
 }
 
-export type LeadStatus = 'prospected' | 'qualified';
+export type LeadStatus = 'prospected' | 'qualified' | 'Unqualified';
 
 export interface Lead {
   id: string;
@@ -63,4 +63,5 @@ export interface Lead {
   analysis: AnalysisResult;
   status: LeadStatus;
   createdAt: string;
+  metadata?: Record<string, any>;
 }

@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SearchIcon, SparklesIcon, TrendingUpIcon, TargetIcon, ChevronRightIcon, AlertCircleIcon, LoadingSpinner, RefreshCwIcon } from './icons/Icon';
-import { analyzeCompanyWebsite } from '../services/geminiService';
-import type { View, Company, AnalysisResult, Industry } from '../types';
+import { performAnalysis } from '../services/configuredAnalysis';
+import type { View, Company, Lead, Industry } from '../types';
 
 interface DiscoveryProps {
-  onAnalyzeComplete: (company: Company, analysis: AnalysisResult) => void;
+  onAnalyzeComplete: (lead: Lead) => void;
   setView: (view: View) => void;
 }
 
@@ -50,20 +50,18 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
             formattedUrl = 'https://' + formattedUrl;
         }
         const hostname = new URL(formattedUrl).hostname.replace('www.', '');
-        const tempCompany: Company = {
+        const tempCompany: Omit<Company, 'id' | 'location' | 'contact'> = {
             name: hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1),
             website: hostname,
             industry: 'Technology' as Industry,
-            location: 'Online',
-            contact: `info@${hostname}`
         };
-        const analysisResult = await analyzeCompanyWebsite(tempCompany);
+        const newLead = await performAnalysis(tempCompany);
         
         stopProgress();
         setProgress(100);
       
         setTimeout(() => {
-          onAnalyzeComplete(tempCompany, analysisResult);
+          onAnalyzeComplete(newLead);
         }, 500);
     } catch (err) {
         stopProgress();
