@@ -1,3 +1,4 @@
+import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
 import { Company, AnalysisResult, OpportunityDetail, GroundingSource, UserProfile } from '../types';
 
 // This function now expects a Company object without an ID
@@ -47,51 +48,27 @@ export const analyzeCompanyWebsite = async (
     }
   `;
 
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
   try {
     console.log("🔍 Analyzing company:", company.name, "with persona:", userProfile.companyName);
     
-    // The new request body that matches the Gemini API spec
-    const requestPayload = {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
         temperature: 0.5,
+        tools: [{ googleSearch: {} }],
       },
-      tools: [{ googleSearch: {} }],
-    };
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60-second timeout
-
-    // Call your own backend proxy
-    const proxyResponse = await fetch('/api/gemini-proxy.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestPayload),
-      signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
-    if (!proxyResponse.ok) {
-        const errorData = await proxyResponse.json().catch(() => {
-            // Return a default error object if parsing fails (e.g., HTML error page)
-            return { error: { message: `Server returned status ${proxyResponse.status}. Please check if the URL is correct and publicly accessible.` } };
-        });
-        throw new Error(`Analysis failed: ${errorData.error?.message || 'Server error from proxy.'}`);
-    }
-    
-    const response = await proxyResponse.json();
-
-    if (!response.candidates || response.candidates.length === 0) {
-      console.error("❌ Gemini API returned no candidates.", response);
+    const responseText = response.text;
+    if (!responseText) {
+      console.error("❌ Gemini API returned no text content.", response);
       throw new Error("Analysis failed: The AI returned no content. This may be due to safety filters or an issue with the target website.");
     }
     
-    // The rest of the logic is the same, but we access the text differently
-    const aiContent = response.candidates[0].content;
-    let jsonText = aiContent.parts[0].text.trim();
+    let jsonText = responseText.trim();
     console.log("📄 Raw AI Response (first 500 chars):", jsonText.substring(0, 500));
     
     const jsonStartIndex = jsonText.indexOf('{');
@@ -141,16 +118,13 @@ export const analyzeCompanyWebsite = async (
       throw new Error("Analysis failed: ROI calculated to $0.");
     }
     
-    const sources: GroundingSource[] = response.candidates[0]?.groundingMetadata?.groundingChunks || [];
+    const sources: GroundingSource[] = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     console.log("✅ Found", sources.length, "sources");
     
     return { ...validatedAnalysis as AnalysisResult, sources };
 
   } catch (error) {
     console.error("❌ Error analyzing company website:", error);
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error('Analysis timed out after 60 seconds. The website might be slow or protected.');
-    }
     if (error instanceof SyntaxError) {
       throw new Error("Failed to parse AI analysis. The model returned malformed JSON. Please try again.");
     }
