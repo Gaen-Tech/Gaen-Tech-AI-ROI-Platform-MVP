@@ -1,11 +1,10 @@
-
 # Application Architecture
 
 This document provides a high-level overview of the technical architecture for the Gaen Tech AI ROI Generation Platform.
 
 ## 1. Core Philosophy
 
-The architecture is designed around the principles of a Minimum Viable Product (MVP): simplicity, speed, and focus on core value. We use a modern, component-based frontend architecture that is easy to understand, maintain, and extend. The design prioritizes reliability and user trust.
+The architecture is designed around the principles of a Minimum Viable Product (MVP): simplicity, speed, and focus on core value. We use a modern, component-based frontend architecture that is easy to understand, maintain, and extend. The design prioritizes reliability, user trust, and configurability.
 
 ## 2. Technology Stack
 
@@ -20,32 +19,44 @@ The architecture is designed around the principles of a Minimum Viable Product (
 The codebase is organized into logical directories to maintain separation of concerns:
 
 - `components/`: Contains all reusable React components. This is the primary building block of the UI.
-- `services/`: Handles external API communication, abstracting the data-fetching logic from the components. `geminiService.ts` and `proposalService.ts` are the key files here.
+- `config/`: Home to the core configuration logic, most importantly `industryConfigs.ts`, which defines the AI personas.
+- `services/`: Handles external API communication and business logic, abstracting it from the UI.
 - `hooks/`: Stores custom React hooks.
 - `types.ts`: A central location for all TypeScript type definitions, ensuring data consistency across the application.
 
 ## 4. State Management
 
-For the MVP, we have adopted a localized state management approach using **React Hooks** (`useState`, `useCallback`, `useMemo`, `useEffect`).
+For the MVP, we have adopted a localized state management approach using **React Hooks** (`useState`, `useCallback`) and **Browser `localStorage`** for persistence.
 
-- **Why this approach?**: It avoids the overhead and complexity of a global state management library (like Redux or Zustand) which is not necessary for the current scale of the application.
-- **State Location**: The primary application state (the list of `leads` and the `userProfile`) is lifted up to the main `App.tsx` component.
-- **Data Flow**: State and state-updating functions are passed down to child components as props. This follows a unidirectional data flow, making the application easier to reason about and debug.
+- **Why this approach?**: It avoids the overhead of a global state library (like Redux) which is not necessary for the current scale. `localStorage` provides simple, effective persistence for user configurations.
+- **Application State**: The primary application state (the list of `leads`) is managed in the main `App.tsx` component.
+- **Configuration State**: The active AI persona and all custom-created personas are managed by the helper functions in `config/industryConfigs.ts` and persisted in `localStorage`. This decouples the powerful configuration system from the component tree's state.
+- **Data Flow**: State and state-updating functions are passed down to child components as props, following a unidirectional data flow.
 
 ## 5. Architectural Patterns
 
-### Robust Service Layer (`geminiService.ts`)
+### Two-Tier Service Layer
 
-The service layer is designed to be highly resilient. Instead of just making an API call, it's responsible for:
-- **Error Handling**: Throwing a clear error if the required `API_KEY` is not configured.
-- **Prompt Engineering**: Crafting precise, dynamic instructions for the AI model, injecting the user-defined sales persona to tailor the analysis.
-- **Resilient Parsing**: Intelligently extracting a valid JSON object from the AI's response, even if it contains extraneous text.
-- **Response Validation**: Proactively checking if the AI's response is empty or blocked by safety filters, providing clear errors to the user.
-- **Data Integrity**: Validating the structure of the AI's response and providing fallbacks for critical missing data (e.g., calculating `estimatedAnnualROI` if it's not provided).
+The service layer is designed to be highly resilient and organized. It's split into two distinct levels:
+
+1.  **High-Level: `configuredAnalysis.ts`**
+    - This is the **business logic** layer and the primary entry point for any analysis.
+    - It is responsible for retrieving the active `IndustryConfig` (persona).
+    - It dynamically constructs a detailed, highly-specific prompt for the AI by merging the company's details with the persona's system instructions, templates, and rules.
+    - It performs post-processing on the AI's results, such as re-calculating scores based on keywords, to ensure alignment with the persona's goals.
+
+2.  **Low-Level: `geminiService.ts`**
+    - This is the **API communication** layer. It acts as a robust, resilient wrapper around the Gemini API.
+    - It knows nothing about different personas; it simply accepts a prompt and a company's details.
+    - Its responsibilities include: checking for the `API_KEY`, making the raw API call, handling low-level errors, intelligently parsing JSON from the AI's potentially messy response, and validating the basic structure of the data.
+
+### Config-Driven UI
+
+The entire application's analysis capability is driven by the objects defined in `config/industryConfigs.ts`. This makes the platform highly extensible. Adding a new, complex analysis capability is as simple as defining a new `IndustryConfig` object, with no changes needed to the React components.
 
 ## 6. Data Flow Diagram (Conceptual)
 
-This diagram illustrates the primary workflow of analyzing a company and generating a lead.
+This diagram illustrates the primary workflow of analyzing a company.
 
 ```
 [User Interaction]        (In Discovery.tsx)
@@ -54,33 +65,40 @@ This diagram illustrates the primary workflow of analyzing a company and generat
 [Click "Analyze Company"]
        |
        v
-[handleAnalyze(company)] --> Calls geminiService.analyzeCompanyWebsite(company, userProfile)
+Calls performAnalysis(company) in [configuredAnalysis.ts]
+       |
+       |--> Reads active persona ID from localStorage.
+       |--> Gets the full persona object from [config/industryConfigs.ts].
+       |--> Builds a dynamic, detailed system instruction prompt.
        |
        v
-[geminiService.ts] -----> Injects userProfile into the prompt. Checks for API_KEY.
-       |                 If present, makes API call to Google Gemini via proxy.
-       |                          |
-       |                          v
-       |                      [Google Cloud]
-       |                          |
-       |                          v
-       |<---- [AnalysisResult] --- Returns JSON response (which is then cleaned, validated, and parsed)
+Calls analyzeCompanyWebsite(company, dynamicPrompt) in [geminiService.ts]
+       |
+       |--> Checks for API_KEY.
+       |--> Makes the API call to [Google Gemini API].
+       |
+       |<---- Returns raw text response.
+       |
+       |--> Cleans, validates, and parses the text into a JSON [AnalysisResult].
        |
        v
-[onAnalyzeComplete(company, analysisResult)] is called in Discovery.tsx
+Returns [AnalysisResult] to [configuredAnalysis.ts]
+       |
+       |--> Performs post-processing (e.g., score adjustment).
+       |--> Constructs a full [Lead] object.
        |
        v
-[addLead(company, analysis)] is called in App.tsx
+Returns [Lead] object to [Discovery.tsx]
+       |
+       v
+Calls onAnalyzeComplete(lead)
+       |
+       v
+[addLead(lead)] is called in App.tsx
        |
        v
 [setLeads(...)] --> Updates the main application state
        |
        v
-[React Re-renders] --> UI is updated to show the new lead in Leads.tsx
+[React Re-renders] --> UI is updated to show the new lead.
 ```
-
-## 7. Future Considerations
-
-- **Global State Management**: If the application grows in complexity with more shared state between deeply nested components, introducing a library like Zustand or React Context API might become necessary.
-- **API Abstraction**: As more external services are added, the `services/` directory can be expanded with more specific handlers, potentially with a shared API client for handling auth, headers, and errors.
-- **Component Library**: For a larger application, creating a more formal component library with a tool like Storybook would be beneficial for consistency and reusability.

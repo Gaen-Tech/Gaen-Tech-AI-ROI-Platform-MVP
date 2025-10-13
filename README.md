@@ -1,11 +1,10 @@
-
 # Gaen Tech - AI ROI Generation Platform
 
 ## Project Overview
 
-Welcome to the Gaen Tech AI ROI Generation Platform. This is a lean, fast, and profitable Minimum Viable Product (MVP) designed to identify and qualify high-value website leads. The platform analyzes a company's current website, identifies opportunities for AI implementation, and generates a professional proposal detailing the potential Return on Investment (ROI).
+Welcome to the Gaen Tech AI ROI Generation Platform. This is a lean, fast, and profitable Minimum Viable Product (MVP) designed to identify and qualify high-value website leads. The platform analyzes a company's current website using customizable AI personas, identifies opportunities, and generates a professional proposal detailing the potential Return on Investment (ROI).
 
-The core mission is to empower sales and business development teams to quickly turn potential prospects into qualified leads with data-driven, AI-powered insights.
+The core mission is to empower sales and business development teams to quickly turn potential prospects into qualified leads with data-driven, AI-powered insights tailored to their specific market.
 
 ---
 
@@ -13,27 +12,33 @@ The core mission is to empower sales and business development teams to quickly t
 
 - **Dashboard Overview**: Get a high-level view of your sales pipeline, including the number of opportunities, qualified leads, and total potential ROI.
 
-- **Configurable Sales Persona**: Tailor the AI's analysis to your specific business. Define your company name and product offerings on the dashboard and click "Update Persona" to generate hyper-personalized reports for any industry, from tech solutions to high-end dental equipment.
+- **Multi-Persona Analysis Engine**: The core of the platform. Instead of a single analysis model, you can choose from multiple AI "personas" to conduct analysis. This allows for highly specialized and relevant insights.
+    - **Built-in Personas**: Comes with pre-configured personas for General Business, AI Digital Transformation, and specialized industry examples.
+    - **Active Persona Selection**: Easily switch the active analysis persona from the Dashboard to change the context for all future discoveries.
 
-- **On-Demand Company Discovery**: Analyze any company on-the-fly by simply entering their website URL. This allows for targeted, real-time lead generation.
+- **AI Persona Configuration Page**: A dedicated section to manage your analysis personas.
+    - **View & Understand**: See all available built-in and custom personas.
+    - **Create & Customize**: Create new personas from scratch to fit your exact needs.
+    - **Clone & Tweak**: Clone existing built-in personas to use as a starting point for your own custom versions.
+    - **Manage Lifecycle**: Edit, enable/disable, and delete custom personas.
+
+- **On-Demand Company Discovery**: Analyze any company on-the-fly by simply entering their website URL. This allows for targeted, real-time lead generation using the currently active persona.
 
 - **AI-Powered Analysis**:
     - Leverages the Google Gemini API with **Google Search grounding** to ensure analysis is based on real-time, verifiable data.
     - Generates an "AI Opportunity Score" to quickly assess a prospect's potential.
-    - Identifies 2-3 key, high-impact opportunities with clear problem statements and AI-driven solutions.
+    - Identifies key, high-impact opportunities with clear problem statements and solutions relevant to the active persona.
     - Provides estimated financial impact and an ROI timeline for each opportunity.
 
 - **Lead Management**:
     - Automatically converts every analyzed company into a lead.
     - View detailed breakdowns of the AI analysis for each lead in a modal view.
-    - Update lead status through a simple sales funnel (`Prospected`, `Qualified`).
+    - Update lead status through a simple sales funnel (`Prospected`, `Qualified`, `Unqualified`).
     - Filter and sort leads by creation date, opportunity score, or estimated ROI.
 
-- **One-Click PDF Proposals**: Instantly generate a professional, client-ready digital transformation proposal based on the AI analysis. The proposal is professionally formatted and includes all key data points and verifiable sources.
+- **One-Click PDF Proposals**: Instantly generate a professional, client-ready proposal based on the AI analysis. The proposal is professionally formatted and includes all key data points and verifiable sources.
 
 - **Responsive Design**: A modern, fully responsive interface with a fixed sidebar on desktop and a slide-in menu on mobile.
-
-- **Accessibility**: Key interactive elements include ARIA labels to ensure a better user experience for all users.
 
 ---
 
@@ -54,22 +59,24 @@ The core mission is to empower sales and business development teams to quickly t
 │   ├── icons/          # SVG icon components
 │   ├── Dashboard.tsx
 │   ├── Discovery.tsx
+│   ├── IndustryConfig.tsx # UI for managing AI personas
 │   ├── Leads.tsx
 │   ├── LeadDetailModal.tsx
 │   ├── ProposalForExport.tsx
-│   └── Sidebar.tsx      # Handles responsive navigation (Sidebar/Mobile Menu)
+│   └── Sidebar.tsx      # Handles responsive navigation
+├── config/             # Application configuration
+│   └── industryConfigs.ts # Defines built-in personas and manages custom ones
 ├── docs/               # Project documentation
-│   ├── ARCHITECTURE.md
-│   ├── API_GUIDE.md
-│   └── USER_GUIDE.md
-├── hooks/              # Custom React hooks (e.g., useMockCompanies.ts)
-├── services/           # API interaction layer (e.g., geminiService.ts, proposalService.ts)
+├── hooks/              # Custom React hooks
+├── services/           # API interaction and business logic layer
+│   ├── configuredAnalysis.ts # High-level service for persona-driven analysis
+│   ├── geminiService.ts      # Low-level wrapper for the Gemini API
+│   └── proposalService.ts
 ├── types.ts            # Core TypeScript type definitions
 ├── App.tsx             # Main application component
 ├── index.html          # HTML entry point
 ├── index.tsx           # React root renderer
-├── README.md           # This file
-└── ...
+└── README.md           # This file
 ```
 
 ---
