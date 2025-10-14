@@ -103,7 +103,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
                 </div>
                 <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-pink-500/50 transition">
                     <div className="flex items-center justify-between mb-4"><div className="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center"><DollarSignIcon className="w-6 h-6 text-pink-400" /></div><span className="text-xs text-gray-400 uppercase tracking-wider">Pipeline</span></div>
-                    <div className="text-3xl font-bold text-white mb-1">${(totalROI / 1000).toFixed(0)}K</div><p className="text-sm text-gray-400">Estimated Annual ROI</p>
+                    <div className="text-3xl font-bold text-white mb-1">${totalROI.toLocaleString()}</div><p className="text-sm text-gray-400">Estimated Annual ROI</p>
                 </div>
                 <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-orange-500/50 transition">
                     <div className="flex items-center justify-between mb-4"><div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center"><BarChart3Icon className="w-6 h-6 text-orange-400" /></div><span className="text-xs text-gray-400 uppercase tracking-wider">Average</span></div>
@@ -130,7 +130,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
                                         <p className="text-gray-400 text-sm mb-2">{lead.company.website}</p>
                                         <div className="flex flex-wrap items-center gap-4 text-sm">
                                             <div className="flex items-center gap-1 text-gray-400"><BarChart3Icon className="w-4 h-4 text-cyan-400" />Score: {lead.analysis.opportunityScore}/100</div>
-                                            <div className="flex items-center gap-1 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" />${(lead.analysis.estimatedAnnualROI / 1000).toFixed(0)}K ROI</div>
+                                            <div className="flex items-center gap-1 text-gray-400"><DollarSignIcon className="w-4 h-4 text-green-400" />${lead.analysis.estimatedAnnualROI.toLocaleString()} ROI</div>
                                             <div className="flex items-center gap-1 text-gray-400"><ClockIcon className="w-4 h-4 text-purple-400" />{new Date(lead.createdAt).toLocaleDateString()}</div>
                                         </div>
                                     </div>

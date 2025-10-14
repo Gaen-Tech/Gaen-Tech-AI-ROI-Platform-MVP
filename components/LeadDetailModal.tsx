@@ -70,7 +70,7 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose }) => {
           </div>
           <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
             <div className="flex items-center gap-3 text-gray-400 mb-2"><DollarSignIcon className="w-5 h-5 text-green-400" /><span>Estimated Annual ROI</span></div>
-            <p className="text-3xl font-bold text-white">${(lead.analysis.estimatedAnnualROI / 1000).toFixed(0)}K</p>
+            <p className="text-3xl font-bold text-white">${lead.analysis.estimatedAnnualROI.toLocaleString()}</p>
           </div>
           <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
             <div className="flex items-center gap-3 text-gray-400 mb-2"><ClockIcon className="w-5 h-5 text-orange-400" /><span>Analyzed On</span></div>
