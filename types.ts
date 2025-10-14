@@ -1,4 +1,4 @@
-export type View = 'dashboard' | 'discovery' | 'leads' | 'configuration';
+export type View = 'dashboard' | 'discovery' | 'leads' | 'configuration' | 'terms' | 'privacy';
 
 export enum Industry {
   TECH = 'Technology',

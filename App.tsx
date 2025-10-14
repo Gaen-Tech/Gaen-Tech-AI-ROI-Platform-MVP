@@ -5,6 +5,9 @@ import Leads from './components/Leads';
 import { Navigation } from './components/Sidebar';
 import { View, Lead } from './types';
 import { IndustryConfigPage } from './components/IndustryConfig';
+import TermsOfService from './components/TermsOfService';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import SecurityFooter from './components/SecurityFooter';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
@@ -44,19 +47,28 @@ const App: React.FC = () => {
         return <Leads leads={leads} onUpdateLead={updateLead} setView={setView} />;
       case 'configuration':
         return <IndustryConfigPage setView={setView} />;
+      case 'terms':
+        return <TermsOfService setView={setView} />;
+      case 'privacy':
+        return <PrivacyPolicy setView={setView} />;
       default:
         return <Dashboard leads={leads} setView={setView} />;
     }
   };
 
+  const showNav = view !== 'terms' && view !== 'privacy';
+
   return (
-    <div className="relative min-h-screen md:flex bg-slate-900 text-gray-100 font-sans">
-      <Navigation currentView={view} setView={setView} />
-      <main className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1 overflow-y-auto">
-              {renderView()}
-          </div>
-      </main>
+    <div className="flex flex-col min-h-screen bg-slate-900 text-gray-100 font-sans">
+      <div className="flex-1 md:flex min-h-0">
+        {showNav && <Navigation currentView={view} setView={setView} />}
+        <main className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 overflow-y-auto">
+                {renderView()}
+            </div>
+        </main>
+      </div>
+      <SecurityFooter setView={setView} />
     </div>
   );
 };
