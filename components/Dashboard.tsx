@@ -54,12 +54,12 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
         <div className="absolute top-1/2 left-1/2 w-72 h-72 border border-pink-400 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-6 py-8">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="text-center mb-12 max-w-4xl mx-auto">
-            <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 AI ROI Platform
             </h2>
-            <p className="text-xl text-gray-300 mb-2">
+            <p className="text-lg md:text-xl text-gray-300 mb-2">
                 Transform Sales Intelligence with Data-Driven Insights
             </p>
             <p className="text-gray-400">
@@ -68,10 +68,10 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
         </div>
         
         <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 rounded-2xl p-8 shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300">
+            <div className="bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 rounded-2xl p-6 md:p-8 shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300">
                 <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-2xl font-bold text-white mb-2">Ready to discover your next opportunity?</h3>
+                    <h3 className="text-xl md:text-2xl font-bold text-white mb-2">Ready to discover your next opportunity?</h3>
                     <p className="text-cyan-100 mb-4">
                     Enter a company website and let AI analyze their ROI potential
                     </p>
