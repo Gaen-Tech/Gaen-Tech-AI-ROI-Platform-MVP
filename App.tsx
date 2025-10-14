@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import { Discovery } from './components/Discovery';
 import Leads from './components/Leads';
@@ -13,6 +13,24 @@ import { CookieConsent } from './components/CookieConsent';
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('gaen-theme');
+    // Default to dark theme as per the new design's aesthetic
+    return savedTheme || 'dark';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('gaen-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
+  };
   
   const addLead = useCallback((newLead: Lead) => {
     let leadExists = false;
@@ -60,16 +78,12 @@ const App: React.FC = () => {
   const showNav = view !== 'terms' && view !== 'privacy';
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-900 text-gray-100 font-sans">
-      <div className="flex-1 flex min-h-0">
-        {showNav && <Navigation currentView={view} setView={setView} />}
-        <main className="flex-1 flex flex-col min-w-0">
-            <div className="flex-1 overflow-y-auto">
-                {renderView()}
-            </div>
+    <div className="flex flex-col min-h-screen light-gradient-bg dark:main-gradient-bg">
+        {showNav && <Navigation currentView={view} setView={setView} theme={theme} toggleTheme={toggleTheme} />}
+        <main className="flex-1">
+          {renderView()}
         </main>
-      </div>
-      <SecurityFooter setView={setView} />
+      {showNav && <SecurityFooter setView={setView} />}
       <CookieConsent setView={setView} />
     </div>
   );
