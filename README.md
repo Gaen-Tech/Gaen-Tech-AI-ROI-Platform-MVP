@@ -10,7 +10,7 @@ The core mission is to empower sales and business development teams to quickly t
 
 ## Key Features
 
-- **Dashboard Overview**: Get a high-level view of your sales pipeline, including the number of opportunities, qualified leads, and total potential ROI.
+- **Modern Dashboard**: Get a high-level view of your sales pipeline, including leads analyzed, qualified opportunities, total potential ROI, and average opportunity scores.
 
 - **Multi-Persona Analysis Engine**: The core of the platform. Instead of a single analysis model, you can choose from multiple AI "personas" to conduct analysis. This allows for highly specialized and relevant insights.
     - **Built-in Personas**: Comes with pre-configured personas for General Business, AI Digital Transformation, and specialized industry examples.
@@ -38,7 +38,7 @@ The core mission is to empower sales and business development teams to quickly t
 
 - **One-Click PDF Proposals**: Instantly generate a professional, client-ready proposal based on the AI analysis. The proposal is professionally formatted and includes all key data points.
 
-- **Responsive Design**: A modern, fully responsive interface with a fixed sidebar on desktop and a slide-in menu on mobile.
+- **Responsive Design**: A modern, fully responsive interface with a sleek top navigation bar and a theme toggle for light and dark modes.
 
 ---
 
@@ -63,7 +63,7 @@ The core mission is to empower sales and business development teams to quickly t
 │   ├── Leads.tsx
 │   ├── LeadDetailModal.tsx
 │   ├── ProposalForExport.tsx
-│   └── Sidebar.tsx      # Handles responsive navigation
+│   └── Sidebar.tsx      # Handles responsive navigation (Header)
 ├── config/             # Application configuration
 │   └── industryConfigs.ts # Defines built-in personas and manages custom ones
 ├── docs/               # Project documentation
