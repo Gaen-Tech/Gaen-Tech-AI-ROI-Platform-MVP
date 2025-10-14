@@ -25,7 +25,7 @@ The core mission is to empower sales and business development teams to quickly t
 - **On-Demand Company Discovery**: Analyze any company on-the-fly by simply entering their website URL. This allows for targeted, real-time lead generation using the currently active persona.
 
 - **AI-Powered Analysis**:
-    - Leverages the Google Gemini API with **Google Search grounding** to ensure analysis is based on real-time, verifiable data.
+    - Leverages a powerful Generative AI API to ensure analysis is based on real-time, public data.
     - Generates an "AI Opportunity Score" to quickly assess a prospect's potential.
     - Identifies key, high-impact opportunities with clear problem statements and solutions relevant to the active persona.
     - Provides estimated financial impact and an ROI timeline for each opportunity.
@@ -36,7 +36,7 @@ The core mission is to empower sales and business development teams to quickly t
     - Update lead status through a simple sales funnel (`Prospected`, `Qualified`, `Unqualified`).
     - Filter and sort leads by creation date, opportunity score, or estimated ROI.
 
-- **One-Click PDF Proposals**: Instantly generate a professional, client-ready proposal based on the AI analysis. The proposal is professionally formatted and includes all key data points and verifiable sources.
+- **One-Click PDF Proposals**: Instantly generate a professional, client-ready proposal based on the AI analysis. The proposal is professionally formatted and includes all key data points.
 
 - **Responsive Design**: A modern, fully responsive interface with a fixed sidebar on desktop and a slide-in menu on mobile.
 
@@ -46,7 +46,7 @@ The core mission is to empower sales and business development teams to quickly t
 
 - **Frontend**: React, TypeScript
 - **Styling**: Tailwind CSS
-- **AI/ML**: Google Gemini API (`gemini-2.5-flash`)
+- **AI/ML**: Generative AI
 - **PDF Generation**: jsPDF
 
 ---
@@ -70,7 +70,7 @@ The core mission is to empower sales and business development teams to quickly t
 ├── hooks/              # Custom React hooks
 ├── services/           # API interaction and business logic layer
 │   ├── configuredAnalysis.ts # High-level service for persona-driven analysis
-│   ├── geminiService.ts      # Low-level wrapper for the Gemini API
+│   ├── geminiService.ts      # Low-level wrapper for the AI API
 │   └── proposalService.ts
 ├── types.ts            # Core TypeScript type definitions
 ├── App.tsx             # Main application component
@@ -86,13 +86,13 @@ The core mission is to empower sales and business development teams to quickly t
 ### Prerequisites
 
 - A modern web browser (e.g., Chrome, Firefox, Safari).
-- A valid Google Gemini API Key.
+- A valid Generative AI API Key.
 
 ### Configuration
 
-The application requires a Google Gemini API key to function. This key must be stored in an environment variable named `API_KEY`.
+The application requires a Generative AI API key to function. This key must be stored in an environment variable named `API_KEY`.
 
-1.  **Obtain an API Key**: If you don't have one, get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+1.  **Obtain an API Key**: You must obtain an API key from your chosen generative AI provider.
 2.  **Set Environment Variable**: The execution environment where this app is hosted must have the `API_KEY` environment variable set. The application is coded to read `process.env.API_KEY` directly.
 
 If the `API_KEY` is not set, the application will not be able to perform AI analysis and will display an error message.

@@ -116,31 +116,6 @@ export const ProposalForExport: React.FC<Props> = ({ lead, innerRef }) => {
                 We are confident that our proposed solutions will deliver significant value to {lead.company.name}. We recommend scheduling a follow-up call to discuss these opportunities in greater detail, answer any questions, and outline a tailored implementation roadmap.
             </p>
         </section>
-
-        {lead.analysis.sources && lead.analysis.sources.length > 0 && (
-            <section className="my-8">
-                <h3 className="text-2xl font-semibold text-white mb-3 border-b border-slate-700 pb-2">Analysis Sources</h3>
-                <p className="text-gray-400 text-sm mb-3">
-                    This analysis was grounded in real-time data from the following public web sources:
-                </p>
-                <ul className="space-y-2">
-                  {lead.analysis.sources.map((source, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <LinkIcon className="w-4 h-4 text-gray-500 mt-1 flex-shrink-0" />
-                      <a 
-                        href={source.web.uri} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-cyan-400 hover:underline text-sm truncate"
-                        title={source.web.uri}
-                      >
-                        {source.web.title || source.web.uri}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-            </section>
-        )}
       </main>
 
       <footer className="mt-12 pt-6 border-t border-slate-700 text-center text-xs text-gray-500">

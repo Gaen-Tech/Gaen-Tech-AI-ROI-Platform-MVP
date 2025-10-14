@@ -155,28 +155,6 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({ lead, onClose }) => {
                 </div>
             </section>
         )}
-
-        {lead.analysis.sources && lead.analysis.sources.length > 0 && (
-          <section>
-            <h3 className="text-xl font-bold text-white mb-4">Analysis Sources</h3>
-            <ul className="space-y-2">
-              {lead.analysis.sources.map((source, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <LinkIcon className="w-4 h-4 text-gray-500 mt-1 flex-shrink-0" />
-                  <a 
-                    href={source.web.uri} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-cyan-400 hover:underline text-sm truncate"
-                    title={source.web.uri}
-                  >
-                    {source.web.title || source.web.uri}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </div>
     </div>
   );

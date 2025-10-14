@@ -8,6 +8,7 @@ import { IndustryConfigPage } from './components/IndustryConfig';
 import TermsOfService from './components/TermsOfService';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import SecurityFooter from './components/SecurityFooter';
+import { CookieConsent } from './components/CookieConsent';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
@@ -60,7 +61,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-900 text-gray-100 font-sans">
-      <div className="flex-1 md:flex min-h-0">
+      <div className="flex-1 flex min-h-0">
         {showNav && <Navigation currentView={view} setView={setView} />}
         <main className="flex-1 flex flex-col min-w-0">
             <div className="flex-1 overflow-y-auto">
@@ -69,6 +70,7 @@ const App: React.FC = () => {
         </main>
       </div>
       <SecurityFooter setView={setView} />
+      <CookieConsent setView={setView} />
     </div>
   );
 };

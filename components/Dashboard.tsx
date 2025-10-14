@@ -173,7 +173,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
                     </div>
                     <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 p-6 hover:border-purple-500/50 transition">
                         <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-4"><TargetIcon className="w-6 h-6 text-purple-400" /></div>
-                        <h4 className="text-white font-bold mb-2">Data-Driven</h4><p className="text-gray-400 text-sm">Source-linked proposals based on Google Search data</p>
+                        <h4 className="text-white font-bold mb-2">Data-Driven</h4><p className="text-gray-400 text-sm">Proposals based on public web data</p>
                     </div>
                 </div>
             </div>
