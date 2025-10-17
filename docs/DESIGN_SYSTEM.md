@@ -2,7 +2,13 @@
 
 This document serves as the official design guide for the Gaen Tech AI ROI Platform. It provides all the necessary visual and technical specifications to ensure brand consistency and accelerate development.
 
-## 1. Logo & Visual Identity
+## 1. Brand Story & Mission
+
+**Mission:** To simplify complexity and reveal hidden ROI.
+
+Gaen Tech empowers sales and business development teams to transform cold outreach into warm opportunities through intelligent, data-driven insights. We make the future of lead generation faster, smarter, and more profitable by leveraging advanced AI in a user-friendly, secure platform.
+
+## 2. Logo & Visual Identity
 
 Our logo represents innovation, intelligence, and clarity. It consists of an icon and a logotype.
 
@@ -22,7 +28,7 @@ The primary logo combines the "auto_awesome" icon with the "Gaen Tech" logotype.
 
 ---
 
-## 2. Color Palette
+## 3. Color Palette
 
 Our color palette is designed to be modern, vibrant, and accessible, with full support for both light and dark themes.
 
@@ -64,7 +70,7 @@ Accent colors are used for data visualization, status indicators, and to draw at
 
 ---
 
-## 3. Typography
+## 4. Typography
 
 Our typography is clean, modern, and highly readable, based on the Poppins font family.
 
@@ -89,7 +95,7 @@ Our typography is clean, modern, and highly readable, based on the Poppins font 
 
 ---
 
-## 4. UI Components
+## 5. UI Components
 
 Core UI components should adhere to these styles for consistency.
 
@@ -115,7 +121,7 @@ Core UI components should adhere to these styles for consistency.
 
 ---
 
-## 5. Iconography
+## 6. Iconography
 
 We use Google's Material Icons and Material Symbols for a consistent and professional look.
 
@@ -125,10 +131,48 @@ We use Google's Material Icons and Material Symbols for a consistent and profess
 
 ---
 
-## 6. Layout & Spacing
+## 7. Layout & Spacing
 
 - **Layout**: The application uses a container-based layout (`container mx-auto`) with padding.
 - **Spacing**: Follows Tailwind's default spacing scale for margins, padding, and gaps to ensure consistent rhythm throughout the UI.
 - **Gradients**:
   - **Dark Mode**: `radial-gradient(circle at top, #1e293b, #030712 70%)`
   - **Light Mode**: `radial-gradient(circle at top, #F5F3FF, #F9FAFB 80%)`
+
+---
+
+## 8. Animation & Motion
+
+Animation should be purposeful, subtle, and used to enhance the user experience, not distract from it.
+
+- **`fade-in`**: Used for elements that appear on the screen, such as modals or overlays. Provides a smooth, non-jarring entrance.
+- **`slide-up`**: Used for elements that appear at the bottom of the screen or in response to a user action, like the cookie consent banner or a new card in a list. This gives a sense of the element originating from the action.
+- **`animate-pulse`**: Used sparingly on decorative background elements or loading indicators to convey activity without being distracting.
+- **Transitions**: Standard UI elements (buttons, links, borders) should use `transition-all duration-300` to smooth out color and size changes on hover and focus states.
+
+---
+
+## 9. Tone of Voice
+
+Our brand voice is **Empowering, Intelligent, and Clear.**
+
+- **Empowering**: We speak to users as capable professionals. Our language is confident and focuses on benefits and opportunities (e.g., "Uncover Hidden Revenue," "Transforming how professionals...").
+- **Intelligent**: We convey expertise without being overly technical or jargony. We use terms like "AI-Powered," "Data-Driven Insights," and "Analysis" to communicate the sophistication of our platform.
+- **Clear**: We prioritize clarity and directness. Instructions and labels are concise and easy to understand. We avoid ambiguity.
+
+**Example Phrases:**
+- **Do:** "Start Your Analysis"
+- **Don't:** "Click here to begin the process of AI-driven opportunity discovery"
+
+---
+
+## 10. Accessibility (A11y)
+
+We are committed to building a product that is usable by everyone. All development must adhere to **WCAG 2.1 AA** guidelines as a minimum standard.
+
+- **Semantic HTML**: Use appropriate HTML tags (`<nav>`, `<main>`, `<button>`, etc.) to provide structure.
+- **ARIA Attributes**: Use `aria-label`, `role`, and other ARIA attributes where necessary to provide context for screen readers, especially for icon-only buttons.
+- **Keyboard Navigation**: All interactive elements must be focusable and operable via keyboard.
+- **Focus States**: All focusable elements must have a clear and visible focus state (e.g., `focus:ring-2 focus:ring-primary`).
+- **Color Contrast**: Ensure that all text meets the minimum contrast ratios against its background, as specified by WCAG guidelines. Our palette is designed with this in mind.
+- **Alternative Text**: Provide descriptive `alt` text for all meaningful images (not applicable to this icon-heavy app, but a core principle).
