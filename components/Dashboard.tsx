@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { Lead, View } from '../types';
 import { getAllConfigs, getActiveConfig, setActiveConfig } from '../config/industryConfigs';
@@ -6,9 +5,10 @@ import { getAllConfigs, getActiveConfig, setActiveConfig } from '../config/indus
 interface DashboardProps {
   leads: Lead[];
   setView: (view: View) => void;
+  onAnalyzeRequest: (url: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
+const Dashboard: React.FC<DashboardProps> = ({ leads, setView, onAnalyzeRequest }) => {
   const [activeConfigId, setActiveConfigId] = useState<string>(() => getActiveConfig().id);
   const [urlInput, setUrlInput] = useState('');
   const allConfigs = getAllConfigs();
@@ -35,9 +35,17 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
   };
 
   const handleAnalyzeClick = () => {
-    // For now, this just navigates to the discovery page.
-    // A future enhancement could pass the URL state.
-    setView('discovery');
+    if (urlInput.trim()) {
+      onAnalyzeRequest(urlInput.trim());
+    } else {
+      setView('discovery');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleAnalyzeClick();
+    }
   };
 
   return (
@@ -67,6 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, setView }) => {
                     type="text"
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
                   />
                 </div>
                 <button 

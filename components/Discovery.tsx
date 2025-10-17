@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { SearchIcon, SparklesIcon, TrendingUpIcon, TargetIcon, ChevronRightIcon, AlertCircleIcon, LoadingSpinner, RefreshCwIcon } from './icons/Icon';
 import { performAnalysis } from '../services/configuredAnalysis';
 import type { View, Company, Lead, Industry } from '../types';
@@ -6,27 +6,25 @@ import type { View, Company, Lead, Industry } from '../types';
 interface DiscoveryProps {
   onAnalyzeComplete: (lead: Lead) => void;
   setView: (view: View) => void;
+  initialUrl?: string;
+  clearInitialUrl?: () => void;
 }
 
-export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView }) => {
-  const [url, setUrl] = useState('');
+export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView, initialUrl, clearInitialUrl }) => {
+  const [url, setUrl] = useState(initialUrl || '');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const progressIntervalRef = useRef<number | null>(null);
 
-  const stopProgress = () => {
+  const stopProgress = useCallback(() => {
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
     }
-  };
-
-  useEffect(() => {
-    return () => stopProgress();
   }, []);
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = useCallback(async () => {
     if (!url || isAnalyzing) return;
 
     setIsAnalyzing(true);
@@ -69,7 +67,20 @@ export const Discovery: React.FC<DiscoveryProps> = ({ onAnalyzeComplete, setView
         setProgress(0);
         setIsAnalyzing(false);
     }
-  };
+  }, [url, isAnalyzing, onAnalyzeComplete, stopProgress]);
+  
+  useEffect(() => {
+    return () => stopProgress();
+  }, [stopProgress]);
+
+  useEffect(() => {
+    if (initialUrl && clearInitialUrl) {
+      handleAnalyze();
+      clearInitialUrl();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && url && !isAnalyzing) {

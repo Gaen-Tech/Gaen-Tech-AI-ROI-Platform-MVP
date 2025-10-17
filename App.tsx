@@ -13,6 +13,7 @@ import { CookieConsent } from './components/CookieConsent';
 const App: React.FC = () => {
   const [view, setView] = useState<View>('dashboard');
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [urlToAnalyze, setUrlToAnalyze] = useState('');
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('gaen-theme');
     // Default to dark theme as per the new design's aesthetic
@@ -56,12 +57,17 @@ const App: React.FC = () => {
     );
   }, []);
 
+  const handleAnalyzeRequest = (url: string) => {
+    setUrlToAnalyze(url);
+    setView('discovery');
+  };
+
   const renderView = () => {
     switch (view) {
       case 'dashboard':
-        return <Dashboard leads={leads} setView={setView} />;
+        return <Dashboard leads={leads} setView={setView} onAnalyzeRequest={handleAnalyzeRequest} />;
       case 'discovery':
-        return <Discovery onAnalyzeComplete={addLead} setView={setView} />;
+        return <Discovery onAnalyzeComplete={addLead} setView={setView} initialUrl={urlToAnalyze} clearInitialUrl={() => setUrlToAnalyze('')} />;
       case 'leads':
         return <Leads leads={leads} onUpdateLead={updateLead} setView={setView} />;
       case 'configuration':
@@ -71,7 +77,7 @@ const App: React.FC = () => {
       case 'privacy':
         return <PrivacyPolicy setView={setView} />;
       default:
-        return <Dashboard leads={leads} setView={setView} />;
+        return <Dashboard leads={leads} setView={setView} onAnalyzeRequest={handleAnalyzeRequest} />;
     }
   };
 
