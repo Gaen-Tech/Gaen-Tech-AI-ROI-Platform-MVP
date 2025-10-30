@@ -16,10 +16,10 @@ Before you begin, ensure the application is properly configured with a Google Ge
 
 ## 3. Navigating the Platform
 
-The platform features a modern, responsive navigation system located in a header at the top of the page.
+The platform features a modern, responsive navigation system.
 
-- **On Desktop**: A persistent **top navigation bar** provides direct access to all main views and the theme toggle.
-- **On Mobile**: A clean header with a "hamburger" menu icon toggles a dropdown menu for navigation, alongside the theme toggle.
+- **On Desktop**: A fixed **Sidebar** on the left provides constant access to the main views.
+- **On Mobile**: A clean header with a "hamburger" menu icon toggles a slide-in navigation overlay.
 
 There are four key sections:
 
@@ -39,7 +39,7 @@ This platform is powered by a versatile AI that can adopt different "personas" t
 Before you start analyzing, you need to tell the AI which role to play.
 
 1.  Navigate to the **Dashboard**.
-2.  Find the **"Analysis Persona"** card.
+2.  Find the **"Analysis Configuration"** card.
 3.  Use the **"Active Persona"** dropdown to select the persona you want to use for your next analysis.
     -   **General Business Analysis**: A great all-purpose analyst for common business problems.
     -   **AI Digital Transformation**: A specialist that looks for AI & automation opportunities.

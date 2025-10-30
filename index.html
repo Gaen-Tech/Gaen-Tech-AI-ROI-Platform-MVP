@@ -1,85 +1,62 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gaen Tech - AI ROI Generation Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com/"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
-        darkMode: "class",
         theme: {
-            extend: {
-                colors: {
-                    primary: {
-                        DEFAULT: "#7C3AED", '50': '#F5F3FF', '100': '#EDE9FE', '200': '#DDD6FE', '300': '#C4B5FD', '400': '#A78BFA', '500': '#8B5CF6', '600': '#7C3AED', '700': '#6D28D9', '800': '#5B21B6', '900': '#4C1D95',
-                    },
-                    "background-light": "#F9FAFB",
-                    "background-dark": "#030712",
-                    "card-light": "#FFFFFF",
-                    "card-dark": "#111827",
-                    "text-light": "#1F2937",
-                    "text-dark": "#E5E7EB",
-                    "muted-light": "#6B7280",
-                    "muted-dark": "#9CA3AF",
-                    // OLD COLORS for backward compatibility
-                    'brand-primary': '#00A8A8', 'brand-secondary': '#008080',
-                    'gray-900': '#111827', 'gray-800': '#1F2937', 'gray-700': '#374151', 'gray-600': '#4B5563', 'gray-300': '#D1D5DB', 'gray-100': '#F3F4F6',
-                    'slate-900': '#0F172A', 'slate-800': '#1E293B', 'slate-700': '#334155',
-                    'purple-900': '#581C87', 'purple-600': '#9333EA', 'purple-500': '#A855F7', 'purple-400': '#C084FC',
-                    'cyan-500': '#06B6D4', 'cyan-400': '#22D3EE',
-                    'pink-600': '#DB2777', 'pink-500': '#EC4899', 'pink-400': '#F472B6',
-                    'orange-500': '#F97316', 'orange-400': '#FB923C',
-                    'green-500': '#22C55E', 'green-400': '#4ADE80',
-                    'blue-500': '#3B82F6', 'blue-400': '#60A5FA',
-                },
-                fontFamily: {
-                    display: ["Poppins", "sans-serif"],
-                },
-                borderRadius: {
-                    DEFAULT: "0.75rem", 'lg': '1rem', 'xl': '1.5rem', '2xl': '2rem',
-                },
-                boxShadow: {
-                    'glow-primary': '0 0 20px 5px rgba(124, 58, 237, 0.4)',
-                },
-                keyframes: {
-                  'fade-in': { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                  'slide-up': { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
-                },
-                animation: {
-                  'fade-in': 'fade-in 0.3s ease-out forwards',
-                  'slide-up': 'slide-up 0.4s ease-out forwards',
-                },
+          extend: {
+            colors: {
+              'brand-primary': '#00A8A8',
+              'brand-secondary': '#008080',
+              'gray-900': '#111827',
+              'gray-800': '#1F2937',
+              'gray-700': '#374151',
+              'gray-600': '#4B5563',
+              'gray-300': '#D1D5DB',
+              'gray-100': '#F3F4F6',
+              // New colors for the dashboard
+              'slate-900': '#0F172A',
+              'slate-800': '#1E293B',
+              'slate-700': '#334155',
+              'purple-900': '#581C87',
+              'purple-600': '#9333EA',
+              'purple-500': '#A855F7',
+              'purple-400': '#C084FC',
+              'cyan-500': '#06B6D4',
+              'cyan-400': '#22D3EE',
+              'pink-600': '#DB2777',
+              'pink-500': '#EC4899',
+              'pink-400': '#F472B6',
+              'orange-500': '#F97316',
+              'orange-400': '#FB923C',
+              'green-500': '#22C55E',
+              'green-400': '#4ADE80',
+              'blue-500': '#3B82F6',
+              'blue-400': '#60A5FA',
             },
-        },
-      };
+            keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              'slide-up': {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+            },
+            animation: {
+              'fade-in': 'fade-in 0.3s ease-out forwards',
+              'slide-up': 'slide-up 0.4s ease-out forwards',
+            },
+          }
+        }
+      }
     </script>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-        .main-gradient-bg {
-            background: radial-gradient(circle at top, #1e293b, #030712 70%);
-        }
-        .light-gradient-bg {
-            background: radial-gradient(circle at top, #F5F3FF, #F9FAFB 80%);
-        }
-        .dark .light-gradient-bg {
-            background: none;
-        }
-        .glow-effect {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: #7C3AED;
-            filter: blur(150px);
-            opacity: 0.2;
-            pointer-events: none;
-        }
-    </style>
   <script type="importmap">
 {
   "imports": {
@@ -93,7 +70,7 @@
 }
 </script>
 </head>
-  <body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-display">
+  <body class="bg-gray-900 text-gray-100">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

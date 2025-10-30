@@ -105,11 +105,11 @@ export const analyzeCompanyWebsite = async (
       throw new Error("Analysis failed: The AI response was missing key opportunity data.");
     }
     
-    // Parse top-level ROI. If it's missing, conservatively use the HIGHEST impact opportunity, not the sum.
+    // Parse top-level ROI or calculate it from opportunities if missing
     validatedAnalysis.estimatedAnnualROI = parseCurrency(analysis.estimatedAnnualROI);
-    if (validatedAnalysis.estimatedAnnualROI === 0 && validatedAnalysis.keyOpportunities.length > 0) {
-        validatedAnalysis.estimatedAnnualROI = Math.max(
-            ...validatedAnalysis.keyOpportunities.map(op => op.estimatedImpact)
+    if (validatedAnalysis.estimatedAnnualROI === 0) {
+        validatedAnalysis.estimatedAnnualROI = validatedAnalysis.keyOpportunities.reduce(
+            (sum, op) => sum + op.estimatedImpact, 0
         );
     }
     

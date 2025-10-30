@@ -106,12 +106,11 @@ const MILLENNIUM_DENTAL_CONFIG: IndustryConfig = {
     2. LAPIP Protocol: Treatment for failing dental implants.
     3. Value-Added Procedures (VAPS): Various soft tissue procedures.
     
-    ROI CALCULATION GUIDANCE:
-    - The final 'estimatedAnnualROI' MUST be a single, realistic number based on the MOST RELEVANT opportunity type below.
-    - DO NOT sum the values from different opportunity types.
-    - LANAP potential: $200,000-$250,000/year (for perio/gum disease focus)
-    - LAPIP potential: $150,000-$180,000/year (for implant focus)
-    - VAPS potential: $80,000-$120,000/year (for general soft tissue procedures)
+    ROI CALCULATION FRAMEWORK:
+    - LANAP cases: $200,000-250,000 annual potential
+    - LAPIP cases: $150,000-180,000 annual potential  
+    - VAPS procedures: $80,000-120,000 annual potential
+    - Timeline: 4-15 months depending on practice size
 
     CRITICAL: Your entire response must be a single, valid JSON object, starting with '{' and ending with '}'. Do not include any text, explanation, or markdown formatting before or after the JSON object.
     CRITICAL: Provide a clear 'practiceTypeJustification' based on evidence from the website (e.g., 'Website lists "Dr. Smith, Periodontist" on staff page.').
